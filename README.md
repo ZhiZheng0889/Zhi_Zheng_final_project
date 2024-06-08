@@ -1,6 +1,6 @@
 # Data Visualization and Reproducible Research
 
-> Firstname Lastname. 
+> Zhi Zheng. 
 
 Learn more about me in my [GitHub profile page](https://github.com/reiminer). 
 

@@ -1,0 +1,538 @@
+---
+title: "Mini-Project 02"
+output: 
+  html_document:
+    keep_md: true
+    toc: true
+    toc_float: true
+---
+
+## Data Visualization Mini-Project Report
+
+### Introduction
+
+This report outlines the data visualization mini-project conducted by Zhi Zheng. The project involves analyzing the geographical distribution of lakes in Florida and predicting the SHAPEAREA of these lakes based on their PERIMETER using linear regression. The primary objectives include cleaning and preparing the data, fitting a linear model, analyzing residuals, and creating both static and interactive visualizations to communicate the findings effectively.
+
+#### Data Acquisition and Preparation
+
+The initial step involves downloading the necessary datasets, which include the Florida Lakes Shapefiles and marathon results for contextual purposes. Essential libraries for data manipulation, visualization, and spatial data handling were loaded to facilitate the analysis.
+
+```{r}
+# download.file("https://raw.githubusercontent.com/reisanar/datasets/master/marathon_results_2017.csv", destfile = "../data/marathon_results_2017.csv")
+# 
+# download.file("https://raw.githubusercontent.com/reisanar/datasets/master/Florida_Lakes.zip", destfile = "../data/Florida_Lakes.zip")
+# unzip("../data/Florida_Lakes.zip", exdir = "../data/Florida_Lakes")
+
+```
+
+#### Loading Libraries
+
+Essential libraries for data manipulation, visualization, and spatial data handling were loaded.
+
+```{r}
+library(tidyverse)
+library(viridis)
+library(sf)
+library(plotly)
+library(htmlwidgets)
+library(broom)
+library(ggrepel)
+```
+
+#### Loading and Summarizing Data
+
+The Florida Lakes Shapefiles were loaded, and a summary of the dataset was produced to understand its structure.
+
+```{r}
+# List the contents of the Florida_Lakes directory
+list.files("../data/Florida_Lakes/Florida_Lakes")
+
+# Load Florida Lakes Shapefiles
+florida_lakes <- st_read("../data/Florida_Lakes/Florida_Lakes/Florida_Lakes.shp")
+
+# Summary of Shapefiles
+summary(florida_lakes)
+
+```
+
+#### Data Cleaning and Categorizing Lakes
+
+To ensure the dataset's validity, any invalid geometries were corrected, and basic information about the dataset was displayed. Lakes were then categorized based on their area to facilitate better analysis and visualization.
+
+```{r}
+# Clean the geometry to correct any invalid geometries
+florida_lakes <- st_make_valid(florida_lakes)
+
+# Removing lakes with missing or zero area
+florida_lakes <- florida_lakes %>% filter(SHAPEAREA > 0)
+
+
+# Display basic information about the dataset
+print(st_geometry_type(florida_lakes))
+print(st_crs(florida_lakes))
+print(summary(florida_lakes))
+
+# View the first few rows of the data
+head(florida_lakes)
+
+# Categorize lakes based on their area
+florida_lakes <- florida_lakes %>%
+  mutate(size_category = case_when(
+    SHAPEAREA < 1e5 ~ "Small",
+    SHAPEAREA < 1e6 ~ "Medium",
+    TRUE ~ "Large"
+  ))
+
+# View the updated data
+head(florida_lakes)
+
+
+```
+
+### Visualization
+
+#### Static Map of Florida Lakes
+
+The initial plot was a basic static map of Florida lakes with a minimal theme. This visualization served as a starting point to understand the spatial distribution of lakes.
+
+```{r}
+# Create a static basic spatial visualization plot
+ggplot() +
+  geom_sf(data = florida_lakes) +
+  labs(title = "Florida Lakes",
+       x = "Longitude",
+       y = "Latitude") +
+  theme_minimal()
+```
+
+#### Enhanced Static Plot with Cities
+
+To provide more context, the static plot was enhanced by adding major cities in Florida. This enhancement allowed for better geographical orientation and understanding of the lakes' locations relative to known urban areas. A color-blind friendly palette was used to ensure accessibility.
+
+```{r}
+# Add cities for context (example)
+cities <- data.frame(
+  name = c("Tallahassee", "Jacksonville", "Orlando", "Tampa", "Miami"),
+  lon = c(-84.2807, -81.6557, -81.3792, -82.4572, -80.1918),
+  lat = c(30.4383, 30.3322, 28.5383, 27.9506, 25.7617)
+)
+
+# Create a base plot with viridis color palette
+base_plot <- ggplot() +
+  geom_sf(data = florida_lakes, fill = viridis(1, option = "D"), color = viridis(1, option = "D", begin = 0.2), alpha = 0.7) +
+  labs(title = "Florida Lakes",
+       subtitle = "Geographical Distribution of Lakes in Florida",
+       x = "Longitude",
+       y = "Latitude") +
+  theme_minimal()
+
+# Add cities to the plot with a color blind friendly color
+enhanced_plot <- base_plot +
+  geom_point(data = cities, aes(x = lon, y = lat), color = viridis(1, option = "B"), size = 2) +
+  geom_text(data = cities, aes(x = lon, y = lat, label = name), vjust = -1, hjust = 1, color = viridis(1, option = "B"))
+
+# Display the enhanced plot
+enhanced_plot
+
+```
+
+#### Spatial Visualization
+
+A more detailed spatial visualization was created to illustrate the geographical distribution of lakes in Florida. The lakes were categorized by their size, and a color scheme was applied to highlight these categories. Major cities were also marked on the map for reference.
+
+The map below shows the geographical distribution of lakes in Florida, categorized by their size, with major cities marked in different shape for reference.
+
+```{r}
+# Define cities with coordinates and shapes
+cities <- data.frame(
+  name = c("Tallahassee", "Jacksonville", "Orlando", "Tampa", "Miami"),
+  lon = c(-84.2807, -81.6557, -81.3792, -82.4572, -80.1918),
+  lat = c(30.4383, 30.3322, 28.5383, 27.9506, 25.7617),
+  shape = c(16, 17, 18, 19, 15)  # Different shapes for each city
+)
+
+# Create a base plot with viridis color palette
+enhanced_plot <- ggplot() +
+  geom_sf(data = florida_lakes, aes(fill = size_category, text = NAME), color = viridis(1, option = "D", begin = 0.2), alpha = 0.7) +
+  geom_point(data = cities, aes(x = lon, y = lat, shape = name), color = viridis(1, option = "A", begin = 0.8), size = 3) +
+  scale_shape_manual(values = cities$shape) +
+  scale_fill_viridis_d(option = "D", name = "Size Category") +
+  labs(title = "Florida Lakes",
+       subtitle = "Geographical Distribution of Lakes in Florida",
+       x = "",
+       y = "",
+       shape = "City") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "ivory", color = NA),  # Set background color to ivory
+    plot.background = element_rect(fill = "ivory", color = NA),   # Set plot background color to ivory
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 16, face = "bold", margin = margin(t = 10, b = 10)),
+    plot.subtitle = element_text(hjust = 0, size = 12, margin = margin(b = 10)),
+    panel.grid.major = element_line(color = "grey80", linewidth = 0.5), # Add grid lines
+    legend.position = "right"
+  )
+
+# Display the enhanced static plot
+print(enhanced_plot)
+```
+
+### Findings and Discussion
+
+#### Clarity on Attributes:
+
+The key attributes explored in this analysis include:
+
+-   **SHAPEAREA:** The area of each lake in the dataset.
+-   **PERIMETER:** The perimeter length of each lake.
+-   **Location Coordinates:** The geographical coordinates (latitude and longitude) of each lake.
+-   **Area Category:** The categorization of lakes based on their area (Small, Medium, Large).
+
+Clearly defining these attributes ensures that the audience understands the context and relevance of the visualizations.
+
+#### Original Charts and Data Preparation
+
+The initial plan was to start with a basic static spatial visualization and gradually enhance it by adding contextual elements such as cities. Necessary steps for data cleaning included correcting invalid geometries and removing lakes with missing or zero area. Categorizing the lakes based on their area helped in better analysis and visualization.
+
+#### Story and Difficulties
+
+The visualizations tell a story about the distribution and size of lakes in Florida and how their perimeter correlates with their area. One challenge encountered was ensuring the validity of the spatial data, which required correcting invalid geometries. Additional approaches to explore the data could include analyzing the impact of geographical features on lake sizes and incorporating more complex modeling techniques.
+
+#### Assumptions and Findings
+
+-   **Assumptions:** The initial assumption was that larger perimeters would generally correlate with larger areas. This assumption was confirmed by the linear model.
+-   **Findings:** The analysis confirmed the expected correlation between perimeter and area. However, the categorization of lakes revealed some surprising patterns in the geographical distribution, such as clusters of large lakes in specific regions.
+-   **Surprising Insights:** One surprising insight was the significant variation in lake sizes within the same geographical area, suggesting the influence of local environmental factors.
+
+#### Application of Data Visualization Principles
+
+-   **Clarity**
+    -   **Labels and Scales:** Each visualization includes appropriate labels, scales, and legends to make it easily interpretable. The size categories of lakes are clearly labeled, and the cities are distinctly marked with different shapes.
+    -   **Color Schemes:** The viridis color palette was chosen for its perceptual uniformity, ensuring that colors are easily distinguishable and do not mislead the viewer.
+-   **Accuracy**
+    -   **Data Cleaning:** Necessary steps were taken to correct invalid geometries and remove lakes with missing or zero areas. This ensures that the data used for visualization is accurate and reliable.
+    -   **Categorization:** Lakes were categorized based on their area, allowing for a more nuanced analysis and avoiding misleading representations.
+-   **Engagement**
+    -   **Interactive Elements:** While the plot provided is static, the design anticipates future enhancement with interactive elements. For instance, hover text showing the name of each lake can provide additional information without cluttering the visualization.
+    -   **Spatial Visualization:** Adding cities and using different shapes for each city makes the plot more engaging and informative, allowing viewers to relate lakes to nearby urban centers.
+-   **Proximity**
+    -   **Spatial Proximity:** The spatial arrangement of lakes and cities on the map inherently shows their proximity, suggesting potential relationships or regional patterns.
+-   **Similarity**
+    -   **Consistent Shapes and Colors:** Using different shapes for cities and a consistent color palette for lake categories helps viewers quickly differentiate between various elements.
+-   **Connection**
+    -   **Visual Ties:** Although explicit connections like lines are not used, the spatial arrangement of cities and lakes suggests natural connections and relationships.
+-   **Continuity**
+    -   **Smooth Boundaries:** Ensuring the lakes have smooth and continuous boundaries helps viewers recognize and follow the shapes easily.
+-   **Closure**
+    -   **Complete Shapes:** Even if lakes overlap or parts of the map are less detailed, the shapes are designed to be easily recognizable and complete in the viewer's mind.
+-   **Figure and Ground**
+    -   **Contrasting Background:** Using an ivory background for the map ensures that the lakes and cities stand out clearly, preventing any confusion about what is the foreground (lakes and cities) and what is the background (map).
+-   **Common Fate**
+    -   **Grouped Elements:** Though not dynamically demonstrated here, the plot's design allows for potential grouping of lakes by size or other attributes in interactive versions, helping to identify patterns of shared characteristics.
+-   **Specific Design Choices**
+    -   **Shape Variations for Cities:** Different shapes for each city make it easy to distinguish them from each other and from the lakes.
+    -   **Viridis Color Palette:** This palette ensures good differentiation and is colorblind-friendly, enhancing accessibility.
+    -   **Minimalist Theme:** The theme is kept minimal to avoid distractions, ensuring that the data is the primary focus.
+
+------------------------------------------------------------------------
+
+### Interactive Visualization
+
+The static spatial visualization plot was converted to an interactive plot using `plotly` and saved as an HTML file.
+
+```{r}
+# Convert the ggplot to an interactive plot with plotly
+interactive_plot <- ggplotly(enhanced_plot, tooltip = "text") %>%
+  layout(
+    paper_bgcolor = "ivory",   # Set background color to ivory
+    plot_bgcolor = "ivory",    # Set plot background color to ivory
+    title = list(
+      text = "Florida Lakes",  # Title text
+      x = 0,                            # Align to the left
+      xanchor = "left",                 # Anchor to the left
+      font = list(size = 16, face = "bold"),
+      pad = list(b = 10)                # Adjust bottom padding
+    ),
+    legend = list(
+      x = 1,
+      y = 0.5,
+      xanchor = "right"
+    ),
+    margin = list(t = 50)  # Adjust the top margin to create space for the title
+  )
+
+# Display the interactive plot
+interactive_plot
+
+# Save the interactive plot as an HTML file
+saveWidget(interactive_plot, "florida_lakes_interactive_map.html", selfcontained = TRUE)
+
+```
+
+### Findings and Discussion
+
+#### Clarity on Attributes
+
+The key attributes explored in this analysis include:
+
+-   **SHAPEAREA:** The area of each lake in the dataset.
+-   **PERIMETER:** The perimeter length of each lake.
+-   **Location Coordinates:** The geographical coordinates (latitude and longitude) of each lake.
+-   **Area Category:** The categorization of lakes based on their area (Small, Medium, Large).
+
+#### Original Charts and Data Preparation
+
+The interactive visualization above is built upon the spatial visualization created to illustrate the geographical distribution of lakes in Florida used for the spatial visualization plot for this assignment. The lakes were categorized by their size, and a color scheme was applied to highlight these categories. Major cities were also marked on the map for reference. Data cleaning and preparation steps included correcting invalid geometries to ensure all spatial data had valid geometries, which is crucial for accurate plotting. Additionally, lakes with missing or zero area were filtered out to avoid misleading representations. Lakes were then grouped into categories (Small, Medium, Large) to facilitate more meaningful analysis and visualization.
+
+#### Story and Difficulties
+
+The visualizations tell a comprehensive story about the distribution and size of lakes in Florida, highlighting how their perimeter correlates with their area. For example, the spatial visualization reveals that Orlando is surrounded by numerous lakes, making it an ideal location for water parks and theme parks that incorporate water features. By adding cities to the spatial visualization, viewers can also understand the proximity of lakes to urban centers, which can be crucial for ecological, recreational, and urban planning purposes.
+
+However, ensuring the validity of spatial data was a significant challenge as it required careful examination and correction of spatial records. Properly categorizing the lakes based on their areas also required precise thresholds to ensure meaningful groupings.
+
+Future approaches could include analyzing the impact of geographical features, such as proximity to the coast or elevation, on lake sizes to provide deeper insights. Incorporating more complex models to predict lake size based on environmental and geographical variables could enhance the analysis. Additionally, obtaining more data on constructions, water storage, and other human activities could further enrich the understanding of changes in lake sizes over time, revealing trends related to climate change or human activity.
+
+#### Application of Data Visualization Principles
+
+**Clarity:**
+
+\- **Labels and Scales:** Appropriate labels, scales, and legends make each visualization easily interpretable. Size categories of lakes are clearly labeled, and cities are distinctly marked with different shapes.
+
+\- **Color Schemes:** The viridis color palette was chosen for its perceptual uniformity, ensuring that colors are easily distinguishable and do not mislead the viewer.
+
+**Accuracy:**
+
+\- **Data Cleaning:** Steps were taken to correct invalid geometries and remove lakes with missing or zero areas, ensuring the data is accurate and reliable.
+
+\- **Categorization:** Lakes were categorized by area, allowing for a nuanced analysis and avoiding misleading representations.
+
+**Engagement:**
+
+\- **Interactive Elements:** The interactive plot allows users to zoom in and out, hover over lakes for additional information, and toggle the visibility of cities and lakes, enhancing user interaction.
+
+\- **Spatial Visualization:** Adding cities and using different shapes for each city makes the plot more engaging and informative, helping viewers relate lakes to nearby urban centers.
+
+**Proximity:**
+
+\- **Spatial Arrangement:** The map shows the proximity of lakes to cities, suggesting potential relationships or regional patterns.
+
+**Similarity:**
+
+\- **Consistent Shapes and Colors:** Different shapes for cities and a consistent color palette for lake categories help viewers quickly differentiate between various elements.
+
+**Connection:**
+
+\- **Natural Relationships:** The spatial arrangement of cities and lakes suggests natural connections and relationships without the need for explicit connecting lines.
+
+**Continuity:**
+
+\- **Smooth Boundaries:** Ensuring the lakes have smooth and continuous boundaries helps viewers recognize and follow the shapes easily.
+
+**Closure:**
+
+\- **Complete Shapes:** Even if parts of the map are less detailed or lakes overlap, the shapes are designed to be easily recognizable and perceived as complete.
+
+**Figure and Ground:**
+
+\- **Contrasting Background:** Using an ivory background ensures that the lakes and cities stand out clearly, preventing confusion about what is in the foreground and what is in the background.
+
+**Common Fate:**
+
+\- **Grouped Elements:** The plot's design allows for potential grouping of lakes by size or other attributes, helping to identify patterns of shared characteristics.
+
+**Specific Design Choices:**
+
+\- **Shape Variations for Cities:** Different shapes for each city make it easy to distinguish them from each other and from the lakes.
+
+\- **Viridis Color Palette:** Ensures good differentiation and is colorblind-friendly, enhancing accessibility.
+
+\- **Minimalist Theme:** The theme is kept minimal to avoid distractions, ensuring that the data is the primary focus.
+
+------------------------------------------------------------------------
+
+### Linear Regression Analysis
+
+In this analysis, we developed a linear regression model to predict the area of lakes in Florida (SHAPEAREA) based on their perimeter (PERIMETER). The dataset was first filtered to remove rows with missing values to ensure accurate results. After fitting the linear model, we calculated the predicted values and residuals, focusing on positive predictions for meaningful analysis.
+
+We then identified the top 10 most significant residuals to highlight potential outliers. These outliers were annotated to distinguish them from the rest of the data in subsequent analyses and visualizations. This approach ensures the analysis is robust and highlights unusual data points that deviate significantly from the model's predictions.
+
+```{r}
+# Ensure the correct dataset is used by filtering non-missing values once
+florida_lakes_filtered <- florida_lakes %>%
+  filter(!is.na(SHAPEAREA) & !is.na(PERIMETER))
+
+# Fit a linear model predicting SHAPEAREA based on PERIMETER
+lake_model <- lm(SHAPEAREA ~ PERIMETER, data = florida_lakes_filtered)
+
+# Compute residuals and predicted values
+florida_lakes_filtered <- florida_lakes_filtered %>% 
+  mutate(
+    predicted = predict(lake_model), 
+    residuals = residuals(lake_model),
+    predicted_positive = predicted > 0  # Create a logical column for filtering
+  )
+
+# Filter out rows with non-positive predicted values for log transformation
+florida_lakes_positive <- florida_lakes_filtered %>%
+  filter(predicted_positive)
+
+florida_lakes_positive
+
+# Identify the top 10 most significant residuals
+top_residuals <- florida_lakes_positive %>%
+  top_n(10, wt = abs(residuals))
+
+top_residuals
+
+# Annotate rows with significant residuals
+florida_lakes_positive <- florida_lakes_positive %>%
+  mutate(top_residual = ifelse(NAME %in% top_residuals$NAME, "Top 10 Residuals", "Others"))
+
+florida_lakes_positive
+
+# Ensure the top_residuals data frame has the top_residual column
+top_residuals <- top_residuals %>%
+  mutate(top_residual = "Top 10 Residuals")
+
+top_residuals
+```
+
+### Visualization of Residuals
+
+#### Residuals vs Predicted Plot
+
+A plot was created to visualize the residuals versus the predicted values, using a log scale for the predicted values.
+
+```{r}
+# Plotting Residuals vs Predicted with log scale for the predicted values
+residuals_plot <- ggplot(florida_lakes_positive, aes(x = predicted, y = residuals, color = top_residual, shape = top_residual)) +
+  geom_point(alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  geom_text_repel(data = top_residuals, aes(label = NAME), vjust = -1, hjust = 1, color = "black") +  # Annotate only top residuals
+  scale_x_log10() +
+  scale_color_manual(values = c("Top 10 Residuals" = "red", "Others" = "black")) +
+  scale_shape_manual(values = c("Top 10 Residuals" = 19, "Others" = 16)) +
+  labs(title = "Residuals vs Predicted",
+       x = "Predicted Values (log scale)",
+       y = "Residuals",
+       color = "Legend",
+       shape = "Legend") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "ivory", color = NA),  # Set background color to ivory
+    plot.background = element_rect(fill = "ivory", color = NA),   # Set plot background color to ivory
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 16, face = "bold", margin = margin(t = 10, b = 10)),
+    plot.subtitle = element_text(hjust = 0, size = 12, margin = margin(b = 10)),
+    panel.grid.major = element_line(color = "grey80", linewidth = 0.5), # Add grid lines
+    legend.position = "right"
+  )
+
+
+
+```
+
+#### Predicted vs Actual Plot
+
+An improved plot was created to compare predicted values against actual SHAPEAREA values.
+
+```{r}
+# Improved Predicted vs Actual plot
+predicted_actual_plot <- ggplot(florida_lakes_positive, aes(x = predicted, y = SHAPEAREA, color = top_residual, shape = top_residual)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, linetype = "solid", color = "blue") +
+  geom_text_repel(data = top_residuals, aes(label = NAME), color = "black") +  # Annotate only top residuals
+  scale_color_manual(values = c("Top 10 Residuals" = "red", "Others" = "black")) +
+  scale_shape_manual(values = c("Top 10 Residuals" = 19, "Others" = 16)) +
+  labs(title = "Predicted vs Actual",
+       x = "Predicted Values",
+       y = "Actual Values",
+       color = "Legend",
+       shape = "Legend") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "ivory", color = NA),  # Set background color to ivory
+    plot.background = element_rect(fill = "ivory", color = NA),   # Set plot background color to ivory
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 16, face = "bold", margin = margin(t = 10, b = 10)),
+    plot.subtitle = element_text(hjust = 0, size = 12, margin = margin(b = 10)),
+    panel.grid.major = element_line(color = "grey80", linewidth = 0.5), # Add grid lines
+    legend.position = "right"
+  )
+
+
+```
+
+```{r}
+# Display the plots
+residuals_plot
+predicted_actual_plot
+```
+
+### Findings and Discussion
+
+#### Original Charts and Data Preparation
+
+Initially, I planned to use a box and whisker plot to visualize the data. However, I decided to create residuals vs predicted and predicted vs actual plots instead. This decision was made because these plots provide a more comprehensive analysis of the model's performance by illustrating how well the model's predictions align with the actual data and highlighting significant outliers.
+
+Data cleaning involved removing rows with missing values for SHAPEAREA and PERIMETER to ensure accurate results. After fitting the linear model, predicted values and residuals were calculated. Rows with non-positive predicted values were then filtered out for meaningful analysis. These steps ensured that the data used for visualization was accurate and reliable.
+
+#### Clarity on Attributes
+
+The key attributes explored in this analysis include:
+
+-   **SHAPEAREA:** The area of each lake in the dataset.
+-   **PERIMETER:** The perimeter length of each lake.
+
+Clearly defining these attributes ensures that the audience understands the context and relevance of the visualizations.
+
+#### Story and Difficulties
+
+The visualizations tell a story about how the perimeter of lakes can be used to predict their area, highlighting significant outliers. For example, some lakes like Lake Okeechobee show significant deviations from the model's predictions, indicating unique characteristics or measurement anomalies. Difficulties encountered included handling invalid geometries and categorizing the data meaningfully. Additional approaches to explore the data could include geographical analysis, incorporating more environmental variables, and obtaining more data on constructions, water storage, and other human activities.
+
+### Assumptions and Findings
+
+The initial assumption was that the perimeter of a lake would be a good predictor of its area. The linear model generally confirmed this assumption, with a significant correlation between perimeter and area. However, the analysis also revealed surprising insights, such as significant outliers like Lake Okeechobee, which deviated markedly from the predicted values. These outliers suggest that other factors, such as depth, shape, or human modifications, might also play a role in determining lake area.
+
+#### Application of Data Visualization Principles
+
+**Clarity:**
+
+\- **Labels and Scales:** Each plot includes appropriate labels and scales to ensure they are easily interpretable. The use of a log scale for the predicted values in the residuals plot helps in visualizing a wide range of values.
+
+\- **Color Schemes:** The viridis color palette was chosen for its perceptual uniformity, ensuring that colors are easily distinguishable and do not mislead the viewer. Different colors are used to differentiate between significant residuals and other data points.
+
+**Accuracy:**
+
+\- **Data Cleaning:** Necessary steps were taken to correct invalid geometries and remove lakes with missing or zero areas. This ensures that the data used for visualization is accurate and reliable. - **Categorization:** Lakes were categorized based on their residual significance, allowing for a more nuanced analysis and avoiding misleading representations.
+
+**Engagement:**
+
+\- **Annotations:** Significant residuals are annotated to highlight important outliers, making the plots more informative and engaging.
+
+**Similarity:**
+
+\- **Consistent Shapes and Colors:** Different colors and shapes are used to distinguish significant residuals from other data points, helping viewers quickly differentiate between various elements.
+
+**Figure and Ground:**
+
+\- **Contrasting Background:** Using an ivory background ensures that the data points and annotations stand out clearly, preventing confusion about what is in the foreground and what is in the background.
+
+**Specific Design Choices:**
+
+\- **Color and Shape Differentiation:** Different colors and shapes for significant residuals make it easy to identify and distinguish them from other data points.
+
+\- **Minimalist Theme:** The theme is kept minimal to avoid distractions, ensuring that the data is the primary focus.
+
+**Specific Design Choices:**
+
+\- **Viridis Color Palette:** Ensures good differentiation and is colorblind-friendly, enhancing accessibility.
+
+\- **Minimalist Theme:** The theme is kept minimal to avoid distractions, ensuring that the data is the primary focus.
+
+------------------------------------------------------------------------
+
+### Conclusion
+
+This mini-project successfully explored and visualized the relationship between the perimeter and area of lakes in Florida. The process involved data cleaning, model fitting, residual analysis, and creating both static and interactive visualizations. Key principles of data visualization and design were applied to ensure clarity, simplicity, and effective communication of insights. Despite challenges such as handling missing data and ensuring appropriate log scale transformations, the final visualizations provided valuable insights and highlighted potential areas for further exploration.
