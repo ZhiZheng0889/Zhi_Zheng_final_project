@@ -66,7 +66,7 @@ Open `Zheng_project_03.Rmd` in RStudio and run the code chunks to generate the v
 ![Maximum Temperatures for Each Month in 2022](../figures/ridges_plot.png)
 
 ### Daily Precipitation in 2022
-![Daily Precipitation in 2022](../figures/precipitation_point_plot.png)
+![Daily Precipitation in 2022](../figures/precipitation_plot.png)
 
 ### Word Cloud
 ![Word Cloud](../figures/word_cloud.png)
