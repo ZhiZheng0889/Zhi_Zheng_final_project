@@ -300,7 +300,8 @@ precipitation_point_plot <- weather_tpa %>%
     axis.text.x = element_text(size = 10),
     axis.text.y = element_text(size = 10),
     legend.position = "right",
-    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 16, face = "bold"),
     plot.background = element_rect(fill = "ivory", color = NA),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
@@ -308,8 +309,8 @@ precipitation_point_plot <- weather_tpa %>%
   ) +
   labs(
     title = "Daily Precipitation in 2022",
-    x = "Day of the Month",
-    y = "Month"
+    x = "",
+    y = ""
   )
 
 # Print the plot
@@ -390,21 +391,29 @@ bigram_counts <- bigrams %>%
 # Inspect bigram counts
 glimpse(bigram_counts)
 
+
 ```
 
 ```{r}
-# Filter for most common bigrams
-bigram_graph <- bigram_counts %>%
-  filter(n > 1) %>%
+# Separate bigram back into two words for graph
+bigram_counts_separated <- bigram_counts %>%
+  separate(bigram, into = c("word1", "word2"), sep = " ")
+
+# Create the graph object
+bigram_graph <- bigram_counts_separated %>%
+  filter(n > 0) %>%  # Reduce the threshold to include more bigrams
   graph_from_data_frame()
 
-# Create a network plot
+# Create the network plot
 set.seed(123)
 ggraph(bigram_graph, layout = "fr") +
   geom_edge_link(aes(edge_alpha = n), show.legend = FALSE) +
   geom_node_point(color = "darkred", size = 5) +
   geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
   theme_void()
+
+
+
 
 ```
 
@@ -429,6 +438,54 @@ sentiments %>%
        x = NULL) +
   coord_flip() +
   theme_minimal()
+
+```
+
+```{r}
+# Create a document-term matrix
+dtm <- tidy_comments %>%
+  count(course, word) %>%
+  cast_dtm(course, word, n)
+
+# Inspect the document-term matrix
+inspect(dtm)
+
+```
+
+```{r}
+# Fit a Latent Dirichlet Allocation (LDA) model with 2 topics
+lda_model <- LDA(dtm, k = 2, control = list(seed = 1234))
+
+# Get the topics
+topics <- tidy(lda_model, matrix = "beta")
+
+# Inspect the topics
+glimpse(topics)
+
+```
+
+
+```{r}
+# Get the top terms for each topic
+top_terms <- topics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+# Visualize the top terms for each topic
+top_terms %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free",
+             labeller = labeller(topic = c("1" = "Course Understanding and Ease", 
+                                           "2" = "Lecture Quality and Responsiveness"))) +
+  coord_flip() +
+  scale_x_reordered() +
+  labs(title = "Top Terms in Each Topic",
+       x = NULL, y = "Beta")
+
 
 ```
 
