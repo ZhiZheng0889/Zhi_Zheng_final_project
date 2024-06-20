@@ -28,6 +28,7 @@ library(wordcloud)
 library(igraph)
 library(ggraph)
 library(tm)
+library(ggrepel)
 ```
 
 
@@ -128,16 +129,16 @@ sample_n(weather_tpa, 100)
 ## # A tibble: 100 × 8
 ##     year month   day precipitation max_temp min_temp ave_temp date      
 ##    <dbl> <dbl> <dbl>         <dbl>    <dbl>    <dbl>    <dbl> <date>    
-##  1  2022     8     5       0.00001       96       78     87   2022-08-05
-##  2  2022     7     7       0.03          93       81     87   2022-07-07
-##  3  2022     4    21       0             87       67     77   2022-04-21
-##  4  2022    11    16       0.14          79       62     70.5 2022-11-16
-##  5  2022     3    27       0             81       63     72   2022-03-27
-##  6  2022     1    27       0             74       59     66.5 2022-01-27
-##  7  2022     9    22       0             94       77     85.5 2022-09-22
-##  8  2022     1    12       0             77       54     65.5 2022-01-12
-##  9  2022    10    11       0.00001       89       74     81.5 2022-10-11
-## 10  2022     2     1       0             76       49     62.5 2022-02-01
+##  1  2022    12     8          0          84       65     74.5 2022-12-08
+##  2  2022    11    23          0.05       79       65     72   2022-11-23
+##  3  2022     9    28          2.47       76       73     74.5 2022-09-28
+##  4  2022     5     1          0.03       86       69     77.5 2022-05-01
+##  5  2022     1    14          0          72       55     63.5 2022-01-14
+##  6  2022     2     5          0.02       71       55     63   2022-02-05
+##  7  2022    11    27          0.27       81       67     74   2022-11-27
+##  8  2022     6    27          1.28       93       76     84.5 2022-06-27
+##  9  2022    12     7          0          84       67     75.5 2022-12-07
+## 10  2022    10     6          0          84       67     75.5 2022-10-06
 ## # ℹ 90 more rows
 ```
 
@@ -149,7 +150,6 @@ month_names <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 # Convert Month column to a factor with abbreviated month names as labels
 weather_tpa$month <- factor(weather_tpa$month, levels = 1:12, labels = month_names)
 ```
-
 
 
 ```r
@@ -201,6 +201,22 @@ print(hist_plot)
 
 Hint: the option `binwidth = 3` was used with the `geom_histogram()` function.
 
+### Analysis of Maximum Temperature Distribution by Month
+
+The histogram faceted by month shows the distribution of maximum temperatures throughout the year. Each facet represents a month and the number of days within specific temperature ranges, revealing clear seasonal variations:
+
+-   **Winter months (January, February, December)**: Lower temperatures, typically between 50 and 70°F, with narrow distributions.
+
+-   **Spring months (March, April, May)**: Gradual temperature increase, ranging from 60 to 80°F, showing more variability.
+
+-   **Summer months (June, July, August)**: Higher temperatures, predominantly between 80 and 100°F, with July having the most consistent high temperatures.
+
+-   **Fall months (September, October, November)**: Declining temperatures, ranging from 70 to 90°F, with wider distributions in September and October.
+
+The viridis color palette enhances visual distinction, making it easy to identify the frequency of temperature values. The plot effectively communicates seasonal trends and variability, meeting the assumptions of faceted histograms for clear month-to-month comparisons. This visualization provides valuable insights into how maximum temperatures vary throughout the year, highlighting seasonal climate patterns.
+
+------------------------------------------------------------------------
+
 (b) Create a plot like the one below:
 
 <img src="https://github.com/reisanar/figs/raw/master/tpa_max_temps_density.png" width="80%" style="display: block; margin: auto;" />
@@ -214,7 +230,6 @@ iqr_temp <- IQR(weather_tpa$max_temp, na.rm = TRUE)
 lower_iqr <- quantile(weather_tpa$max_temp, 0.25, na.rm = TRUE)
 upper_iqr <- quantile(weather_tpa$max_temp, 0.75, na.rm = TRUE)
 ```
-
 
 
 ```r
@@ -266,8 +281,13 @@ density_plot
 
 ![](Zheng_project_03_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
 
-
 Hint: check the `kernel` parameter of the `geom_density()` function, and use `bw = 0.5`.
+
+### Analysis of Density Plot of Maximum Temperatures
+
+The density plot of maximum temperatures provides insights into the distribution of daily high temperatures throughout the year. The plot shows a bimodal distribution with peaks around 70°F and 90°F, indicating common temperature ranges during spring/fall and summer, respectively. Key statistical markers, including the interquartile range (IQR), mean, and median, provide context: the IQR (green lines) spans from approximately 77°F to 90°F, the mean (purple dashed line) is around 84°F, and the median (blue dotted line) is approximately 83°F. These markers suggest a relatively symmetrical distribution. The plot effectively shows that extreme temperatures below 60°F and above 95°F are less frequent. The plot's clear depiction of seasonal trends and statistical summaries offers valuable insights into the expected temperature ranges and their frequency.
+
+------------------------------------------------------------------------
 
 (c) Create a plot like the one below:
 
@@ -288,7 +308,6 @@ remove_outliers <- function(data, column) {
 # Remove outliers from the max_temp column
 weather_tpa <- remove_outliers(weather_tpa, "max_temp")
 ```
-
 
 
 ```r
@@ -332,9 +351,25 @@ density_facet_plot
 
 ![](Zheng_project_03_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 
-
-
 Hint: default options for `geom_density()` were used.
+
+### Analysis of Density Plots for Each Month in 2022
+
+The density plots for each month in 2022 illustrate the distribution of maximum temperatures throughout the year. Each facet represents a month and shows the density of daily maximum temperatures. The visualization reveals distinct seasonal patterns:
+
+-   **Winter months (January, February, December)** exhibit lower temperatures, with densities peaking between 50°F and 70°F.
+
+-   **Spring months (March, April, May)** show increasing temperatures, with densities moving towards higher ranges between 60°F and 80°F.
+
+-   **Summer months (June, July, August)** are characterized by higher temperatures, predominantly between 80°F and 100°F, with July showing a sharp peak around 90°F.
+
+-   **Fall months (September, October, November)** display a decline in temperatures, with distributions shifting back towards 70°F to 90°F.
+
+The color-coded months enhance visual distinction, making it easy to identify and compare temperature patterns across different times of the year. This visualization effectively communicates the seasonal variability in maximum temperatures, highlighting the expected temperature ranges and their frequency for each month. It tells a comprehensive story of how temperatures fluctuate throughout the year, providing insights into typical climatic conditions for each month.
+
+4o
+
+------------------------------------------------------------------------
 
 (d) Generate a plot like the chart below:
 
@@ -376,8 +411,25 @@ ridges_plot
 
 ![](Zheng_project_03_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
 
-
 Hint: use the`{ggridges}` package, and the `geom_density_ridges()` function paying close attention to the `quantile_lines` and `quantiles` parameters. The plot above uses the `plasma` option (color scale) for the *viridis* palette.
+
+### Analysis of Maximum Temperatures for Each Month in 2022
+
+The ridgeline plot of maximum temperatures for each month in 2022 visually depicts the distribution of daily high temperatures across the year. Each ridgeline corresponds to a month, with the x-axis representing temperature in degrees Fahrenheit and the y-axis displaying density. The color gradient from purple to yellow indicates temperature ranges from cooler to warmer.
+
+Key observations include:
+
+-   **Winter months (January, February, December)**: These months show lower maximum temperatures, predominantly between 50°F and 70°F.
+
+-   **Spring months (March, April, May)**: Temperatures gradually increase, with more days experiencing highs between 60°F and 80°F.
+
+-   **Summer months (June, July, August)**: Characterized by higher temperatures, mostly between 80°F and 100°F, with July displaying the highest concentration around 90°F.
+
+-   **Fall months (September, October, November)**: Temperatures start to decline, ranging from 70°F to 90°F.
+
+The plot effectively communicates the seasonal trends and variability in maximum temperatures, illustrating how the distribution shifts over the course of the year. The use of a color gradient enhances the visual representation, making it easy to identify and compare temperature patterns across months. This visualization tells a clear story of how temperatures fluctuate seasonally, providing insights into the typical climate conditions experienced each month in 2022.
+
+------------------------------------------------------------------------
 
 (e) Create a plot of your choice that uses the attribute for precipitation *(values of -99.9 for temperature or -99.99 for precipitation represent missing data)*.
 
@@ -390,7 +442,6 @@ weather_tpa <- weather_tpa %>%
 # Extract day from the date
 weather_tpa$day <- day(weather_tpa$date)
 ```
-
 
 
 ```r
@@ -426,10 +477,27 @@ print(precipitation_point_plot)
 
 ![](Zheng_project_03_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
 
+### Analysis of Daily Precipitation in 2022
+
+The dot plot visualizes daily precipitation throughout 2022, with each row representing a month and each dot corresponding to a day. The size and color of the dots indicate the amount of precipitation, measured in inches.
+
+Key observations include:
+
+-   **Winter and early spring months (January, February, March)**: Show relatively low precipitation, with most days having minimal or no rainfall.
+
+-   **Late spring and summer months (April to August)**: Indicate higher precipitation levels, with larger and more frequent dots, particularly in June and July.
+
+-   **Fall months (September to November)**: Exhibit moderate precipitation, with noticeable rainfall in September and October.
+
+-   **December**: Shows scattered precipitation, similar to the early months.
+
+The use of a viridis color scale enhances visual interpretation by highlighting the precipitation intensity. This plot effectively communicates seasonal rainfall patterns, showing an increase in precipitation during the late spring and summer, followed by a decline in the fall and winter. It tells a clear story of how precipitation varies throughout the year, providing insights into typical rainfall trends and potential periods of heavy rain. The plot meets the assumptions of a dot plot, clearly illustrating daily variations and overall trends in precipitation.
+
+------------------------------------------------------------------------
 
 ## PART 2
 
-> **You can choose to work on either Option (A) or Option (B)**. Remove from this template the option you decided not to work on.
+> **I choose Option (A).**
 
 ### Option (A): Visualizing Text Data
 
@@ -453,6 +521,21 @@ Make sure to include a copy of the dataset in the `data/` folder, and reference 
 # url <- "https://raw.githubusercontent.com/reisanar/datasets/master/rmp_wit_comments.csv"
 # download.file(url, destfile = "../data/rmp_wit_comments.csv")
 ```
+
+# Introduction
+
+The purpose of this analysis is to explore and visualize text data from RateMyProfessors comments. We will perform text preprocessing, bigram analysis, network visualization, and create a word cloud to highlight the most frequent terms. The dataset used in this analysis is a CSV file containing comments and course information.
+
+## Setup
+
+Load the necessary libraries and set global chunk options. This ensures all the required packages are available and sets some options for chunk behavior, such as whether to show messages and warnings.
+
+
+
+### Data Loading
+
+Read the dataset from the CSV file and inspect its structure. This helps to understand the format and content of the data before proceeding with analysis.
+
 
 ```r
 # Read the dataset from the data folder
@@ -481,6 +564,13 @@ glimpse(comments)
 ## $ comments <chr> "He is very enthusiastic to help students. His course content…
 ```
 
+Explanation: The read_csv function from readr is used to load the data, and glimpse from tibble provides a concise overview of the data structure.
+
+### Data Preprocessing
+
+Clean and preprocess the data by tokenizing the comments into words, removing stop words, and filtering out unwanted terms. This prepares the data for further analysis.
+
+
 ```r
 # Unnest tokens (words)
 tidy_comments <- comments %>%
@@ -506,15 +596,87 @@ glimpse(tidy_comments)
 ## $ word   <chr> "enthusiastic", "concise", "enjoyed", "time", "grade", "materia…
 ```
 
+*Explanation*: `unnest_tokens` from `tidytext` splits the comments into individual words. `anti_join(stop_words)` removes common English stop words, and additional filtering removes numeric strings and domain-specific stop words.
+
+------------------------------------------------------------------------
+
+## Word Cloud
+
+Create an enhanced word cloud to visualize the most frequent terms in the comments.
+
+### Explanation:
+
+1.  **Set Seed for Reproducibility**:
+    -   The `set.seed` function is used to ensure the word cloud can be reproduced exactly.
+2.  **Prepare Word Frequency Data**:
+    -   The word frequency data is prepared by counting the occurrences of each word in the tidy comments dataset.
+    -   The words are sorted by their frequency in descending order.
+3.  **Create Word Cloud**:
+    -   The `wordcloud` function is used to create the word cloud.
+    -   Several parameters are adjusted for enhanced aesthetics:
+        -   `bg = "ivory"` sets the background color to ivory to match the visual style of other plots.
+        -   `max.words = 150` increases the maximum number of words displayed in the word cloud.
+        -   `random.order = FALSE` arranges words by their frequency, with the most frequent words in the center.
+        -   `rot.per = 0.35` rotates 35% of the words for visual variety.
+        -   `scale = c(3, 0.5)` sets the scaling range for word sizes, with the largest words being three times the size of the smallest.
+        -   `colors = viridis::viridis(8)` uses the Viridis color palette for better visual appeal and contrast.
+
 
 ```r
-# Create a word cloud
-tidy_comments %>%
-  count(word, sort = TRUE) %>%
-  with(wordcloud(word, n, max.words = 100, colors = brewer.pal(8, "Dark2")))
+# Create an enhanced word cloud with a customized theme
+set.seed(1234) # For reproducibility
+
+# Prepare the word frequency data
+word_freq <- tidy_comments %>%
+  count(word, sort = TRUE)
+
+# Create the word cloud with customized aesthetics
+par(bg = "ivory") # Set background color to ivory
+wordcloud(
+  words = word_freq$word,
+  freq = word_freq$n,
+  max.words = 150,                  # Increase max words
+  random.order = FALSE,             # Ordered by frequency
+  rot.per = 0.35,                   # Rotate 35% of the words
+  scale = c(3, 0.5),                # Scale the size difference
+  colors = viridis::viridis(8)      # Use the viridis color palette
+)
 ```
 
 ![](Zheng_project_03_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+
+*Explanation*: A word cloud is created using the `wordcloud` package. The `viridis` color palette is used for better visual appeal, and words are scaled and rotated for better readability.
+
+### Analysis of Word Cloud from RateMyProfessors Comments
+
+The word cloud visualization highlights the most frequently used terms in RateMyProfessors comments. Larger and bolder words appear more frequently in the dataset. Key terms such as "lectures," "understand," "material," "helpful," "easy," and "calc" stand out prominently, indicating that these are common themes in student feedback.
+
+-   **Lectures** and **material** are frequently mentioned, suggesting that students often comment on the quality and content of the lectures.
+
+-   Words like **understand**, **easy**, and **helpful** imply that many comments focus on the ease of understanding the material and the helpfulness of the instructor.
+
+-   Terms like **calc** and **math** indicate that the subject matter is a significant topic of discussion.
+
+-   The presence of words like **difficult** and **hard** suggests that some students find the material challenging.
+
+This visualization provides a quick overview of the primary themes in the comments, showing a balance of positive feedback about understanding and helpfulness alongside mentions of difficulty and specific subjects like calculus. The word cloud effectively conveys the key points of student feedback, offering insights into common experiences and perceptions in the classroom.
+
+------------------------------------------------------------------------
+
+## Bigram Analysis
+
+Perform bigram analysis to identify commonly used term pairs. This involves tokenizing the comments into bigrams, filtering out stop words, and creating a graph object for visualization.
+
+### Explanation:
+
+1.  **Unnest Bigrams**:
+    -   The comments are tokenized into bigrams using the `unnest_tokens` function.
+    -   The bigrams are separated into two individual words for filtering.
+    -   Stop words and irrelevant words specific to the domain (like "professor", "class", etc.) are removed.
+    -   The two words are then reunited into a single bigram for further processing.
+2.  **Count Bigrams**:
+    -   The occurrences of each bigram are counted and sorted in descending order to identify the most common bigrams.
+    -   The `glimpse` function is used to inspect the resulting bigram counts.
 
 
 ```r
@@ -543,6 +705,38 @@ glimpse(bigram_counts)
 ## $ n      <int> 3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
 ```
 
+*Explanation*: This chunk tokenizes the comments into bigrams, filters out stop words, counts the occurrences of each bigram, and prepares the data for network analysis.
+
+## Network Visualization
+
+Calculate the degree centrality of the nodes and create a network plot to visualize the connections between commonly used bigrams.
+
+### Explanation:
+
+1.  **Separate Bigrams for Graph**:
+
+    -   The bigrams are separated back into two words to create the edges of the graph.
+
+2.  **Create Graph Object**:
+
+    -   A graph object is created from the bigram data using the `graph_from_data_frame` function.
+
+3.  **Calculate Degree Centrality**:
+
+    -   The degree centrality of each node (word) in the graph is calculated. Degree centrality measures the number of connections (edges) each node has.
+
+4.  **Create Network Plot**:
+
+    -   A network plot is created using the `ggraph` package.
+
+    -   Edges are visualized with varying widths and transparency based on the frequency of the bigrams.
+
+    -   Nodes are sized and colored based on their degree centrality.
+
+    -   Text labels for the nodes are added using `geom_text_repel` to avoid overlap.
+
+    -   The plot is styled with a minimal theme and an ivory background for visual appeal.
+
 
 ```r
 # Separate bigram back into two words for graph
@@ -551,19 +745,90 @@ bigram_counts_separated <- bigram_counts %>%
 
 # Create the graph object
 bigram_graph <- bigram_counts_separated %>%
-  filter(n > 0) %>%  # Reduce the threshold to include more bigrams
+  filter(n > 0) %>%
   graph_from_data_frame()
 
-# Create the network plot
-set.seed(123)
-ggraph(bigram_graph, layout = "fr") +
-  geom_edge_link(aes(edge_alpha = n), show.legend = FALSE) +
-  geom_node_point(color = "darkred", size = 5) +
-  geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
-  theme_void()
+# Calculate degree centrality
+V(bigram_graph)$degree <- degree(bigram_graph)
+
+# Print degree values to confirm
+print(V(bigram_graph)$degree)
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
+```
+##  [1] 2 2 1 1 3 1 1 1 1 1 1 4 1 2 1 1 1 2 2 2 1 1 1 1 1 1 1 1 1 1 1 3 1 2 1 1 1 1
+## [39] 1 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 1 1 1 2 1 1 2 1 1 1 1 1 1 1 1 2 1
+## [77] 1 1 1 1 1
+```
+
+*Explanation*: The degree centrality is calculated for each node in the graph. The `ggraph` package is used to visualize the network, with node sizes and colors representing their degree centrality.
+
+Create the network plot to visualize the connections between commonly used bigrams, highlighting the nodes by their degree centrality.
+
+
+```r
+# Create the network plot
+set.seed(123)
+layout <- create_layout(bigram_graph, layout = "fr")
+
+network_plot <- ggraph(layout) +
+  geom_edge_link(aes(width = n, edge_alpha = n), color = "darkred", show.legend = FALSE) +
+  geom_node_point(aes(size = degree, fill = degree), shape = 21, color = "black") +
+  scale_fill_viridis_c(option = "D", direction = -1) +
+  geom_text_repel(aes(x = x, y = y, label = name), size = 3.5, box.padding = unit(0.35, "lines"), point.padding = unit(0.3, "lines"), seed = 123) +
+  scale_edge_width(range = c(0.2, 1.5)) +
+  scale_edge_alpha(range = c(0.5, 1)) +
+  theme_void() +
+  theme(
+    plot.background = element_rect(fill = "ivory", color = NA),
+    panel.grid.major = element_line(color = "gray90", linewidth = 0.5)
+  ) +
+  labs(title = "Network Visualization of Commonly Used Terms",
+       subtitle = "Edges represent bigrams with connections based on count",
+       fill = "Degree")
+
+network_plot
+```
+
+![](Zheng_project_03_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+
+*Explanation*: The network plot is created to visualize the connections between commonly used bigrams. The nodes represent words, and the edges represent the frequency of the bigrams. The plot is customized with a minimal theme and an ivory background.
+
+### Analysis of Network Visualization of Commonly Used Terms
+
+The network visualization of commonly used bigrams from RateMyProfessors comments reveals significant connections between terms and provides insights into frequent themes and associations in student feedback. Nodes represent individual words, and edges connect words that appear together as bigrams, with the size of the nodes indicating the degree (number of connections) and the color representing the degree intensity.
+
+Key observations include:
+
+-   **High-degree nodes** such as "easy," "short," "online," "lectures," and "calc" indicate central themes that are frequently discussed in various contexts.
+
+-   Words like **easy**, **understand**, and **material** are prominently connected, suggesting that students often discuss the ease of understanding the material.
+
+-   Connections between terms like **lectures**, **communication**, and **helpful** indicate that students value effective communication and helpfulness in lectures.
+
+-   The presence of **hard** and **difficult** alongside positive terms reflects the diverse experiences and challenges students face in these courses.
+
+This visualization tells a comprehensive story of student feedback, highlighting both positive and challenging aspects of their learning experiences. It demonstrates the interconnectedness of different themes and provides a clear picture of the key topics and sentiments expressed by students.
+
+------------------------------------------------------------------------
+
+## Sentiment Analysis
+
+Perform sentiment analysis on the comments using the "bing" lexicon. Visualize the most significant positive and negative words contributing to the overall sentiment.
+
+### Explanation:
+
+1.  **Sentiment Analysis**:
+    -   We use the `inner_join` function to merge the tidy comments data with the Bing sentiment lexicon, which classifies words into positive and negative sentiments.
+    -   We then count the occurrences of each word-sentiment pair and ungroup the data for further processing.
+2.  **Visualization**:
+    -   The top 10 words contributing to each sentiment (positive and negative) are selected.
+    -   The words are reordered based on their frequency counts for better visualization.
+    -   A bar plot is created using `ggplot2` where the words are displayed on the y-axis and their contribution to sentiment on the x-axis.
+    -   The plot is faceted by sentiment type (positive and negative) to provide a clear separation of the two sentiment categories.
+    -   Custom themes are applied to enhance the visual appeal, including bold axis titles, minimal grid lines, and an ivory background to match the previous plots.
+
+The following code performs sentiment analysis and visualizes the results:
 
 
 ```r
@@ -580,7 +845,7 @@ sentiments <- tidy_comments %>%
 
 ```r
 # Visualize sentiment
-sentiments %>%
+sentiment_analysis_plot <- sentiments %>%
   group_by(sentiment) %>%
   top_n(10) %>%
   ungroup() %>%
@@ -592,14 +857,53 @@ sentiments %>%
        y = "Contribution to sentiment",
        x = NULL) +
   coord_flip() +
-  theme_minimal()
+  theme_minimal()+
+  theme(
+    axis.title.x = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold"),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 16, face = "bold"),
+    plot.background = element_rect(fill = "ivory", color = NA),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "ivory", color = NA)
+  )
 ```
 
 ```
 ## Selecting by n
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+```r
+sentiment_analysis_plot
+```
+
+![](Zheng_project_03_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
+
+### Analysis of Sentiment Analysis of RateMyProfessors Comments
+
+The sentiment analysis visualization of RateMyProfessors comments provides a clear distinction between positive and negative sentiments expressed by students. The top contributing words to each sentiment category highlight the key themes:
+
+-   **Positive Sentiments:** The most frequent positive words include **easy**, **helpful**, **responsive**, **awesome**, and **wonderful**, indicating that students often appreciate professors who are approachable, supportive, and make learning enjoyable and manageable. Words like **understandable** and **talented** suggest that students value clear and effective teaching.
+
+-   **Negative Sentiments:** The dominant negative words are **difficult**, **hard**, **funny**, **trouble**, and **struggling**, reflecting challenges students face with certain courses or professors. Terms like **scary**, **missed**, and **crappy** further emphasize the difficulties and negative experiences encountered.
+
+This plot effectively conveys the overall tone of student feedback, highlighting the aspects of teaching that are most appreciated as well as those that pose significant challenges. It tells a story of the dual nature of student experiences, with clear attributes linked to positive and negative sentiments. This analysis can guide educators in understanding and addressing both strengths and areas for improvement in their teaching methods.
+
+------------------------------------------------------------------------
+
+## Topic Modeling
+
+This section involves creating a Document-Term Matrix, fitting an LDA model, and visualizing the top terms for each topic.
+
+### Explanation:
+
+1.  **Create a Document-Term Matrix**:
+    -   A Document-Term Matrix (DTM) is created where each row represents a document (course) and each column represents a term (word).
+    -   The `count` function is used to count the occurrences of each word in each course.
+    -   The `cast_dtm` function from the `tidytext` package is used to convert the counts into a DTM format.
 
 
 ```r
@@ -639,6 +943,14 @@ inspect(dtm)
 ##   MATH890           1
 ```
 
+*Explanation*: The document-term matrix is inspected to ensure it has been created correctly and to understand its structure.
+
+2.  **Fit LDA Model**:
+
+    -   A Latent Dirichlet Allocation (LDA) model is fitted to the DTM with a specified number of topics (`k = 2` in this case).
+
+    -   The `LDA` function from the `topicmodels` package is used to fit the model, and the topics are extracted using the `tidy` function.
+
 
 ```r
 # Fit a Latent Dirichlet Allocation (LDA) model with 2 topics
@@ -659,6 +971,19 @@ glimpse(topics)
 ## $ beta  <dbl> 7.246377e-03, 9.803922e-03, 5.148156e-96, 9.803922e-03, 1.134765…
 ```
 
+*Explanation*: The topics are inspected to understand the distribution of terms across the topics.
+
+3.  **Get Top Terms for Each Topic**:
+
+    -   The top terms for each topic are identified based on their beta values.
+    -   The `top_n` function is used to select the top 10 terms for each topic.
+    -   The terms are reordered within each topic for better visualization.
+
+4.  **Visualize the Top Terms**:
+
+    -   A bar plot is created using `ggplot2` to visualize the top terms for each topic.
+    -   The plot is faceted by topic to clearly separate the terms associated with each topic.
+    -   Custom themes are applied to enhance the visual appeal, including bold axis titles, minimal grid lines, and an ivory background.
 
 
 ```r
@@ -670,7 +995,7 @@ top_terms <- topics %>%
   arrange(topic, -beta)
 
 # Visualize the top terms for each topic
-top_terms %>%
+topic_modeling_plot <- top_terms %>%
   mutate(term = reorder_within(term, beta, topic)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
@@ -680,8 +1005,78 @@ top_terms %>%
   coord_flip() +
   scale_x_reordered() +
   labs(title = "Top Terms in Each Topic",
-       x = NULL, y = "Beta")
+       x = NULL, y = "Beta")+
+  theme(
+    axis.title.x = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold"),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 16, face = "bold"),
+    plot.background = element_rect(fill = "ivory", color = NA),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "ivory", color = NA)
+  )
+
+
+topic_modeling_plot
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-25-1.png)<!-- -->
+![](Zheng_project_03_files/figure-html/unnamed-chunk-26-1.png)<!-- -->
+
+*Explanation*: This chunk visualizes the top terms for each topic. The terms are reordered within each topic for better readability, and the plot is customized with a minimal theme and an ivory background.
+
+### Analysis of Top Terms in Each Topic
+
+This visualization represents the top terms for two identified topics from the RateMyProfessors comments, labeled as "Course Understanding and Ease" and "Lecture Quality and Responsiveness."
+
+-   **Course Understanding and Ease:** The terms most associated with this topic include **understand**, **math**, **material**, **calc**, and **pre**, indicating that students frequently discuss their comprehension of the material and the overall ease of understanding the course content. Words like **helpful**, **easy**, and **test** suggest that comments also focus on the supportiveness of the professor and the relative difficulty of assessments.
+
+-   **Lecture Quality and Responsiveness:** Key terms in this topic are **lectures**, **difficult**, **responsive**, **easy**, and **tests**, pointing to discussions around the quality and difficulty of lectures, as well as the responsiveness of the professor. Words like **pay**, **material**, and **makes** indicate that students are also concerned with how lectures are delivered and how engaging they are.
+
+This plot effectively highlights the distinct themes students focus on when evaluating their professors, providing valuable insights into what aspects of the teaching and learning experience are most impactful. The separation into two clear topics allows educators to understand specific areas of strength and areas needing improvement, helping to enhance overall educational quality.
+
+---
+
+
+```r
+# Define the directory path for saving plots
+plot_path <- "../figures/"
+
+# Check if the directory exists, if not, create it
+if (!dir.exists(plot_path)) {
+  dir.create(plot_path, recursive = TRUE)
+}
+
+# Save histogram plot
+ggsave(filename = paste0(plot_path, "histogram_plot.png"), plot = hist_plot, width = 10, height = 8)
+
+# Save density plot
+ggsave(filename = paste0(plot_path, "density_plot.png"), plot = density_plot, width = 10, height = 8)
+
+# Save density facet plot
+ggsave(filename = paste0(plot_path, "density_facet_plot.png"), plot = density_facet_plot, width = 10, height = 8)
+
+# Save ridges plot
+ggsave(filename = paste0(plot_path, "ridges_plot.png"), plot = ridges_plot, width = 10, height = 8)
+
+# Save precipitation plot
+ggsave(filename = paste0(plot_path, "precipitation_plot.png"), plot = precipitation_point_plot, width = 10, height = 8)
+
+# Save word cloud
+png(file = paste0(plot_path, "word_cloud.png"), width = 800, height = 600)
+par(mar = c(0,0,0,0))
+wordcloud(words = word_freq$word, freq = word_freq$n, max.words = 150, random.order = FALSE, rot.per = 0.35, scale = c(3, 0.5), colors = viridis::viridis(8))
+dev.off()
+
+# Save network plot
+ggsave(filename = paste0(plot_path, "network_plot.png"), plot = network_plot, width = 10, height = 8)
+
+# Save sentiment analysis plot
+ggsave(filename = paste0(plot_path, "sentiment_analysis_plot.png"), plot = sentiment_analysis_plot, width = 10, height = 8)
+
+# Save topic modeling plot
+ggsave(filename = paste0(plot_path, "topic_modeling_plot.png"), plot = topic_modeling_plot, width = 10, height = 8)
+```
 
