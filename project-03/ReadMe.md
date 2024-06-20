@@ -54,31 +54,31 @@ Open `Zheng_project_03.Rmd` in RStudio and run the code chunks to generate the v
 ## Visualizations
 
 ### Max Temperatures Histogram by Month
-![Max Temperatures Histogram by Month](path/to/histogram_plot.png)
+![Max Temperatures Histogram by Month](figures/histogram_plot.png)
 
 ### Density Plot of Max Temperatures
-![Density Plot of Max Temperatures](path/to/density_plot.png)
+![Density Plot of Max Temperatures](figures/density_plot.png)
 
 ### Density Plots for Each Month in 2022
-![Density Plots for Each Month in 2022](path/to/density_facet_plot.png)
+![Density Plots for Each Month in 2022](figures/density_facet_plot.png)
 
 ### Maximum Temperatures for Each Month in 2022
-![Maximum Temperatures for Each Month in 2022](path/to/ridges_plot.png)
+![Maximum Temperatures for Each Month in 2022](figures/ridges_plot.png)
 
 ### Daily Precipitation in 2022
-![Daily Precipitation in 2022](path/to/precipitation_point_plot.png)
+![Daily Precipitation in 2022](figures/precipitation_point_plot.png)
 
 ### Word Cloud
-![Word Cloud](path/to/word_cloud.png)
+![Word Cloud](figures/word_cloud.png)
 
 ### Network Visualization of Commonly Used Terms
-![Network Visualization of Commonly Used Terms](path/to/network_plot.png)
+![Network Visualization of Commonly Used Terms](figures/network_plot.png)
 
 ### Sentiment Analysis of RateMyProfessors Comments
-![Sentiment Analysis of RateMyProfessors Comments](path/to/sentiment_analysis_plot.png)
+![Sentiment Analysis of RateMyProfessors Comments](figures/sentiment_analysis_plot.png)
 
 ### Top Terms in Each Topic
-![Top Terms in Each Topic](path/to/topic_modeling_plot.png)
+![Top Terms in Each Topic](figures/topic_modeling_plot.png)
 
 ## Contributing
 Feel free to fork the repository and create a pull request with your proposed changes.
