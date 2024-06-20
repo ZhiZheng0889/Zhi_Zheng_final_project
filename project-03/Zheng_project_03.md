@@ -129,16 +129,16 @@ sample_n(weather_tpa, 100)
 ## # A tibble: 100 × 8
 ##     year month   day precipitation max_temp min_temp ave_temp date      
 ##    <dbl> <dbl> <dbl>         <dbl>    <dbl>    <dbl>    <dbl> <date>    
-##  1  2022    12     8          0          84       65     74.5 2022-12-08
-##  2  2022    11    23          0.05       79       65     72   2022-11-23
-##  3  2022     9    28          2.47       76       73     74.5 2022-09-28
-##  4  2022     5     1          0.03       86       69     77.5 2022-05-01
-##  5  2022     1    14          0          72       55     63.5 2022-01-14
-##  6  2022     2     5          0.02       71       55     63   2022-02-05
-##  7  2022    11    27          0.27       81       67     74   2022-11-27
-##  8  2022     6    27          1.28       93       76     84.5 2022-06-27
-##  9  2022    12     7          0          84       67     75.5 2022-12-07
-## 10  2022    10     6          0          84       67     75.5 2022-10-06
+##  1  2022     2    11       0             78       52     65   2022-02-11
+##  2  2022    12     7       0             84       67     75.5 2022-12-07
+##  3  2022     7    13       0             94       80     87   2022-07-13
+##  4  2022     1    30       0             58       36     47   2022-01-30
+##  5  2022     1     9       0             84       65     74.5 2022-01-09
+##  6  2022     3    23       0             87       73     80   2022-03-23
+##  7  2022     7    10       0.87          93       78     85.5 2022-07-10
+##  8  2022     1    23       0.00001       57       46     51.5 2022-01-23
+##  9  2022     1    29       0             55       41     48   2022-01-29
+## 10  2022     3     2       0             78       58     68   2022-03-02
 ## # ℹ 90 more rows
 ```
 
@@ -384,6 +384,8 @@ ridges_plot <- weather_tpa %>%
   scale_fill_viridis_c(option = "plasma", name = "Temp (°F)") +
   theme_minimal(base_size = 15) +
   theme(
+    strip.background = element_rect(fill = "lightgray", color = NA),
+    strip.text = element_text(size = 14, face = "bold"),
     plot.title.position = "plot",
     plot.title = element_text(hjust = 0, size = 16, face = "bold"),
     plot.subtitle = element_text(hjust = 0.5, size = 12),
@@ -392,7 +394,13 @@ ridges_plot <- weather_tpa %>%
     axis.title.y = element_text(size = 14, face = "bold", angle = 0, vjust = 0.5),
     axis.text.x = element_text(size = 10),
     axis.text.y = element_text(size = 10),
-    legend.position = "right"
+    legend.key.size = unit(0.5, "lines"), # Adjust the size of the legend keys
+    legend.text = element_text(size = 8), # Adjust the size of the legend text
+    legend.spacing.x = unit(0.2, 'cm'), # Adjust spacing between legend items
+    panel.background = element_rect(fill = "ivory", color = NA),
+    plot.background = element_rect(fill = "ivory", color = NA),
+    panel.grid.major.x = element_line(color = "black", linewidth = 0.5),
+    panel.grid.minor.x = element_blank()
   ) +
   labs(
     title = "Maximum Temperatures for Each Month in 2022",
