@@ -9,29 +9,104 @@ output:
 
 # Data Visualization Project 03
 
-
 In this exercise you will explore methods to create different types of data visualizations (such as plotting text data, or exploring the distributions of continuous variables).
-
 
 ## PART 1: Density Plots
 
-Using the dataset obtained from FSU's [Florida Climate Center](https://climatecenter.fsu.edu/climate-data-access-tools/downloadable-data), for a station at Tampa International Airport (TPA) for 2022, attempt to recreate the charts shown below which were generated using data from 2016. You can read the 2022 dataset using the code below: 
+Using the dataset obtained from FSU's [Florida Climate Center](https://climatecenter.fsu.edu/climate-data-access-tools/downloadable-data), for a station at Tampa International Airport (TPA) for 2022, attempt to recreate the charts shown below which were generated using data from 2016. You can read the 2022 dataset using the code below:
 
 ```{r, message=FALSE, warning=FALSE}
+# Load necessary libraries
 library(tidyverse)
-weather_tpa <- read_csv("https://raw.githubusercontent.com/reisanar/datasets/master/tpa_weather_2022.csv")
-# random sample 
-sample_n(weather_tpa, 4)
+library(lubridate)
+library(ggridges)
+library(viridis)
+library(tidytext)
+library(topicmodels)
+library(wordcloud)
+library(igraph)
+library(ggraph)
+library(tm)
 ```
 
-See https://www.reisanar.com/slides/relationships-models#10 for a reminder on how to use this type of dataset with the `lubridate` package for dates and times (example included in the slides uses data from 2016).
+```{r}
 
-Using the 2022 data: 
+# Read the dataset
+weather_tpa <- read_csv("../data/tpa_weather_2022.csv")
+
+# Display the structure and a sample of the data
+weather_tpa
+```
+
+See <https://www.reisanar.com/slides/relationships-models#10> for a reminder on how to use this type of dataset with the `lubridate` package for dates and times (example included in the slides uses data from 2016).
+
+Using the 2022 data:
 
 (a) Create a plot like the one below:
 
 ```{r, echo = FALSE, out.width="80%", fig.align='center'}
 knitr::include_graphics("https://github.com/reisanar/figs/raw/master/tpa_max_temps_facet.png")
+
+```
+
+```{r}
+# Combine year, month, and day into a single date column using lubridate
+weather_tpa <- weather_tpa %>%
+  mutate(date = make_date(year, month, day))
+
+# Check the structure and summary again to confirm the conversion
+str(weather_tpa)
+summary(weather_tpa)
+
+# Random sample to inspect the data
+sample_n(weather_tpa, 100)
+
+# Create a named vector to map month numbers to abbreviated month names
+month_names <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+
+# Convert Month column to a factor with abbreviated month names as labels
+weather_tpa$month <- factor(weather_tpa$month, levels = 1:12, labels = month_names)
+```
+
+
+```{r}
+# Create a histogram of maximum temperature distribution by month with a color-blind friendly palette
+hist_plot <- weather_tpa %>%
+  ggplot(aes(x = max_temp, fill = ..count..)) + # Fill based on the count
+  geom_histogram(binwidth = 3, color = "black", na.rm = TRUE) +
+  scale_fill_viridis_c(option = "D", name = "Count") + # Ensuring continuous scale for count
+  facet_wrap(~ month, scales = "fixed", ncol = 3) +
+  theme_minimal(base_size = 15) +
+  theme(
+    strip.background = element_rect(fill = "lightgray", color = NA),
+    strip.text = element_text(size = 14, face = "bold"),
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 16, face = "bold"),
+    plot.subtitle = element_text(hjust = 0, size = 12),
+    plot.caption = element_text(hjust = 1, size = 10, face = "italic"),
+    axis.title.x = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold", angle = 0, vjust = 0.5),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    legend.position = "right",
+    panel.background = element_rect(fill = "ivory", color = NA),
+    plot.background = element_rect(fill = "ivory", color = NA),
+    panel.grid.major.x = element_line(color = "black", linewidth = 0.5),
+    panel.grid.minor.x = element_blank()
+  ) +
+  labs(
+    title = "Max Temperatures Histogram by Month",
+    x = "Max Temperature (Fahrenheit)",
+    y = "Number of Days"
+  ) +
+  scale_x_continuous(limits = c(50, 100)) +
+  scale_y_continuous(limits = c(0, 25))
+
+# Print histogram plot
+print(hist_plot)
+
+
 ```
 
 Hint: the option `binwidth = 3` was used with the `geom_histogram()` function.
@@ -40,7 +115,58 @@ Hint: the option `binwidth = 3` was used with the `geom_histogram()` function.
 
 ```{r, echo = FALSE, out.width="80%", fig.align='center'}
 knitr::include_graphics("https://github.com/reisanar/figs/raw/master/tpa_max_temps_density.png")
+
 ```
+
+```{r}
+# Calculate statistics
+mean_temp <- mean(weather_tpa$max_temp, na.rm = TRUE)
+median_temp <- median(weather_tpa$max_temp, na.rm = TRUE)
+iqr_temp <- IQR(weather_tpa$max_temp, na.rm = TRUE)
+lower_iqr <- quantile(weather_tpa$max_temp, 0.25, na.rm = TRUE)
+upper_iqr <- quantile(weather_tpa$max_temp, 0.75, na.rm = TRUE)
+
+```
+
+
+```{r}
+# Enhanced density plot for max_temp with color-blind friendly palette and statistics
+density_plot <- weather_tpa %>%
+  ggplot(aes(x = max_temp)) +
+  geom_density(kernel = "gaussian", bw = 0.5, fill = viridis(1), alpha = 0.7) +
+  geom_vline(aes(xintercept = mean_temp, color = "Mean"), linetype = "dashed", size = 1.5) +
+  geom_vline(aes(xintercept = median_temp, color = "Median"), linetype = "dotted", size = 1.5) +
+  geom_vline(aes(xintercept = lower_iqr, color = "IQR"), linetype = "solid", size = 1.5) +
+  geom_vline(aes(xintercept = upper_iqr, color = "IQR"), linetype = "solid", size = 1.5) +
+  scale_color_manual(values = c("Mean" = viridis::viridis(4)[1], "Median" = viridis::viridis(4)[2], "IQR" = viridis::viridis(4)[3])) + # Use viridis colors
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 16, face = "bold"),
+    plot.subtitle = element_text(hjust = 0, size = 12),
+    plot.caption = element_text(hjust = 1, size = 10, face = "italic"),
+    axis.title.x = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold", angle = 0, vjust = 0.5),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    legend.position = "right",
+    panel.background = element_rect(fill = "ivory", color = NA),
+    plot.background = element_rect(fill = "ivory", color = NA),
+    panel.grid.major.x = element_line(color = "black", linewidth = 0.5),
+    panel.grid.minor.x = element_blank()
+  ) +
+  labs(
+    title = "Density Plot of Max Temperatures",
+    x = "Max Temperature (°F)",
+    y = "Density",
+    color = "Statistics"
+  )
+
+# Print density plot
+density_plot
+
+```
+
 
 Hint: check the `kernel` parameter of the `geom_density()` function, and use `bw = 0.5`.
 
@@ -50,96 +176,259 @@ Hint: check the `kernel` parameter of the `geom_density()` function, and use `bw
 knitr::include_graphics("https://github.com/reisanar/figs/raw/master/tpa_max_temps_density_facet.png")
 ```
 
-Hint: default options for `geom_density()` were used. 
+```{r}
+# Function to remove outliers based on the IQR method
+remove_outliers <- function(data, column) {
+  Q1 <- quantile(data[[column]], 0.25)
+  Q3 <- quantile(data[[column]], 0.75)
+  IQR <- Q3 - Q1
+  lower_bound <- Q1 - 1.5 * IQR
+  upper_bound <- Q3 + 1.5 * IQR
+  data %>% filter(data[[column]] >= lower_bound & data[[column]] <= upper_bound)
+}
+
+# Remove outliers from the max_temp column
+weather_tpa <- remove_outliers(weather_tpa, "max_temp")
+```
+
+
+```{r}
+# Create the density plot with faceting
+density_facet_plot <- weather_tpa %>%
+  ggplot(aes(x = max_temp, fill = month)) + # Use month for fill
+  geom_density(alpha = 0.7, color = "black") +
+  facet_wrap(~ month, scales = "free_y", ncol = 4) +
+  scale_fill_viridis_d(name = "Month") + # Use discrete scale for month
+  theme_minimal(base_size = 10) +
+  theme(
+    strip.background = element_rect(fill = "lightgray", color = NA),
+    strip.text = element_text(size = 14, face = "bold"),
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 16, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    plot.caption = element_text(hjust = 1, size = 10, face = "italic"),
+    axis.title.x = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold", angle = 0, vjust = 0.5),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    legend.key.size = unit(0.5, "lines"), # Adjust the size of the legend keys
+    legend.text = element_text(size = 8), # Adjust the size of the legend text
+    legend.spacing.x = unit(0.2, 'cm'), # Adjust spacing between legend items
+    panel.background = element_rect(fill = "ivory", color = NA),
+    plot.background = element_rect(fill = "ivory", color = NA),
+    panel.grid.major.x = element_line(color = "black", linewidth = 0.5),
+    panel.grid.minor.x = element_blank()
+  ) +
+  labs(
+    title = "Density Plots for Each Month in 2022",
+    x = "Maximum Temperatures (°F)",
+    y = "Density"
+  ) +
+  scale_x_continuous(limits = c(50, 100)) +
+  scale_y_continuous(limits = c(0, .2))
+
+# Print the plot
+density_facet_plot
+
+```
+
+
+
+Hint: default options for `geom_density()` were used.
 
 (d) Generate a plot like the chart below:
-
 
 ```{r, echo = FALSE, out.width="80%", fig.align='center'}
 knitr::include_graphics("https://github.com/reisanar/figs/raw/master/tpa_max_temps_ridges_plasma.png")
 ```
 
-Hint: use the`{ggridges}` package, and the `geom_density_ridges()` function paying close attention to the `quantile_lines` and `quantiles` parameters. The plot above uses the `plasma` option (color scale) for the _viridis_ palette.
+```{r}
+# Create the density ridges plot
+ridges_plot <- weather_tpa %>%
+  ggplot(aes(x = max_temp, y = month, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01, quantile_lines = TRUE, quantiles = 2) +
+  scale_fill_viridis_c(option = "plasma", name = "Temp (°F)") +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0, size = 16, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    plot.caption = element_text(hjust = 1, size = 10, face = "italic"),
+    axis.title.x = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold", angle = 0, vjust = 0.5),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    legend.position = "right"
+  ) +
+  labs(
+    title = "Maximum Temperatures for Each Month in 2022",
+    x = "Maximum Temperature (°F)",
+    y = "Month"
+  ) +
+  scale_x_continuous(limits = c(50, 100))
+
+# Print the plot
+ridges_plot
+```
 
 
-(e) Create a plot of your choice that uses the attribute for precipitation _(values of -99.9 for temperature or -99.99 for precipitation represent missing data)_.
+Hint: use the`{ggridges}` package, and the `geom_density_ridges()` function paying close attention to the `quantile_lines` and `quantiles` parameters. The plot above uses the `plasma` option (color scale) for the *viridis* palette.
+
+(e) Create a plot of your choice that uses the attribute for precipitation *(values of -99.9 for temperature or -99.99 for precipitation represent missing data)*.
+
+```{r}
+# Filter out missing precipitation data
+weather_tpa <- weather_tpa %>%
+  filter(precipitation != -99.99)
+
+# Extract day from the date
+weather_tpa$day <- day(weather_tpa$date)
+```
 
 
+```{r}
+# Create the plot with points for precipitation
+precipitation_point_plot <- weather_tpa %>%
+  ggplot(aes(x = day, y = month, size = precipitation, color = precipitation)) +
+  geom_point(alpha = 0.7) +
+  scale_color_viridis_c(option = "plasma", name = "Precipitation (inches)") +
+  scale_size_continuous(range = c(1, 10), name = "Precipitation (inches)") +
+  theme_minimal(base_size = 15) +
+  theme(
+    axis.title.x = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold"),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    legend.position = "right",
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    plot.background = element_rect(fill = "ivory", color = NA),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "ivory", color = NA)
+  ) +
+  labs(
+    title = "Daily Precipitation in 2022",
+    x = "Day of the Month",
+    y = "Month"
+  )
 
-## PART 2 
+# Print the plot
+print(precipitation_point_plot)
+```
 
-> **You can choose to work on either Option (A) or Option (B)**. Remove from this template the option you decided not to work on. 
 
+## PART 2
+
+> **You can choose to work on either Option (A) or Option (B)**. Remove from this template the option you decided not to work on.
 
 ### Option (A): Visualizing Text Data
 
-Review the set of slides (and additional resources linked in it) for visualizing text data: https://www.reisanar.com/slides/text-viz#1
+Review the set of slides (and additional resources linked in it) for visualizing text data: <https://www.reisanar.com/slides/text-viz#1>
 
-Choose any dataset with text data, and create at least one visualization with it. For example, you can create a frequency count of most used bigrams, a sentiment analysis of the text data, a network visualization of terms commonly used together, and/or a visualization of a topic modeling approach to the problem of identifying words/documents associated to different topics in the text data you decide to use. 
+Choose any dataset with text data, and create at least one visualization with it. For example, you can create a frequency count of most used bigrams, a sentiment analysis of the text data, a network visualization of terms commonly used together, and/or a visualization of a topic modeling approach to the problem of identifying words/documents associated to different topics in the text data you decide to use.
 
 Make sure to include a copy of the dataset in the `data/` folder, and reference your sources if different from the ones listed below:
 
-- [Billboard Top 100 Lyrics](https://github.com/reisanar/datasets/blob/master/BB_top100_2015.csv)
+-   [Billboard Top 100 Lyrics](https://github.com/reisanar/datasets/blob/master/BB_top100_2015.csv)
 
-- [RateMyProfessors comments](https://github.com/reisanar/datasets/blob/master/rmp_wit_comments.csv)
+-   [RateMyProfessors comments](https://github.com/reisanar/datasets/blob/master/rmp_wit_comments.csv)
 
-- [FL Poly News Articles](https://github.com/reisanar/datasets/blob/master/flpoly_news_SP23.csv)
-
+-   [FL Poly News Articles](https://github.com/reisanar/datasets/blob/master/flpoly_news_SP23.csv)
 
 (to get the "raw" data from any of the links listed above, simply click on the `raw` button of the GitHub page and copy the URL to be able to read it in your computer using the `read_csv()` function)
 
+```{r}
+# # Download the dataset
+# url <- "https://raw.githubusercontent.com/reisanar/datasets/master/rmp_wit_comments.csv"
+# download.file(url, destfile = "../data/rmp_wit_comments.csv")
 
-### Option (B): Data on Concrete Strength 
+```
+```{r}
+# Read the dataset from the data folder
+comments <- read_csv("../data/rmp_wit_comments.csv")
 
-Concrete is the most important material in **civil engineering**. The concrete compressive strength is a highly nonlinear function of _age_ and _ingredients_. The dataset used here is from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/index.php), and it contains 1030 observations with 9 different attributes 9 (8 quantitative input variables, and 1 quantitative output variable). A data dictionary is included below: 
+# Inspect the dataset
+glimpse(comments)
 
+```
+```{r}
+# Unnest tokens (words)
+tidy_comments <- comments %>%
+  unnest_tokens(word, comments) %>%
+  anti_join(stop_words) %>%
+  filter(!str_detect(word, "\\d+")) %>%  # Remove numbers
+  filter(!word %in% c("professor", "class", "course", "teacher", "students", "lecture", "content", "organized"))  # Remove common non-informative words
 
-Variable                      |    Notes                
-------------------------------|-------------------------------------------
-Cement                        | kg in a $m^3$ mixture             
-Blast Furnace Slag            | kg in a $m^3$ mixture  
-Fly Ash                       | kg in a $m^3$ mixture             
-Water                         | kg in a $m^3$ mixture              
-Superplasticizer              | kg in a $m^3$ mixture
-Coarse Aggregate              | kg in a $m^3$ mixture
-Fine Aggregate                | kg in a $m^3$ mixture      
-Age                           | in days                                             
-Concrete compressive strength | MPa, megapascals
+# Inspect the tidy text data
+glimpse(tidy_comments)
 
-
-Below we read the `.csv` file using `readr::read_csv()` (the `readr` package is part of the `tidyverse`)
+```
 
 ```{r}
-concrete <- read_csv("../data/concrete.csv", col_types = cols())
+# Create a word cloud
+tidy_comments %>%
+  count(word, sort = TRUE) %>%
+  with(wordcloud(word, n, max.words = 100, colors = brewer.pal(8, "Dark2")))
+
 ```
-
-
-Let us create a new attribute for visualization purposes, `strength_range`: 
 
 ```{r}
-new_concrete <- concrete %>%
-  mutate(strength_range = cut(Concrete_compressive_strength, 
-                              breaks = quantile(Concrete_compressive_strength, 
-                                                probs = seq(0, 1, 0.2))) )
+# Unnest bigrams
+bigrams <- comments %>%
+  unnest_tokens(bigram, comments, token = "ngrams", n = 2) %>%
+  separate(bigram, into = c("word1", "word2"), sep = " ") %>%
+  filter(!word1 %in% stop_words$word,
+         !word2 %in% stop_words$word) %>%
+  filter(!word1 %in% c("professor", "class", "course", "teacher", "students", "lecture", "content", "organized"),
+         !word2 %in% c("professor", "class", "course", "teacher", "students", "lecture", "content", "organized")) %>%
+  unite(bigram, word1, word2, sep = " ")
+
+# Count bigrams
+bigram_counts <- bigrams %>%
+  count(bigram, sort = TRUE)
+
+# Inspect bigram counts
+glimpse(bigram_counts)
+
 ```
 
+```{r}
+# Filter for most common bigrams
+bigram_graph <- bigram_counts %>%
+  filter(n > 1) %>%
+  graph_from_data_frame()
 
+# Create a network plot
+set.seed(123)
+ggraph(bigram_graph, layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n), show.legend = FALSE) +
+  geom_node_point(color = "darkred", size = 5) +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
+  theme_void()
 
-1. Explore the distribution of 2 of the continuous variables available in the dataset. Do ranges make sense? Comment on your findings.
-
-2. Use a _temporal_ indicator such as the one available in the variable `Age` (measured in days). Generate a plot similar to the one shown below. Comment on your results.
-
-```{r, echo = FALSE, out.width="80%", fig.align='center'}
-knitr::include_graphics("https://github.com/reisanar/figs/raw/master/concrete_strength.png")
 ```
 
+```{r}
+# Perform sentiment analysis
+sentiments <- tidy_comments %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
 
-3. Create a scatterplot similar to the one shown below. Pay special attention to which variables are being mapped to specific aesthetics of the plot. Comment on your results. 
+# Visualize sentiment
+sentiments %>%
+  group_by(sentiment) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(title = "Sentiment Analysis of RateMyProfessors Comments",
+       y = "Contribution to sentiment",
+       x = NULL) +
+  coord_flip() +
+  theme_minimal()
 
-```{r, echo = FALSE, out.width="80%", fig.align='center'}
-knitr::include_graphics("https://github.com/reisanar/figs/raw/master/cement_plot.png")
 ```
-
-
-
 
