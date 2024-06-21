@@ -60,6 +60,7 @@ library(reshape2)
 library(ggplot2)
 library(lubridate)
 library(viridis)
+library(plotly)
 ```
 
 4.  **Loading and Checking the Dataset:**
@@ -369,7 +370,7 @@ filtered_traffic_data <- traffic_data %>%
   filter(weather_main %in% c("Clear", "Fog", "Snow", "Rain", "Drizzle", "Thunderstorm"))
 
 # Violin Plot with additional context
-ggplot(filtered_traffic_data, aes(x = weather_main, y = traffic_volume, fill = weather_main)) +
+gg_violin <- ggplot(filtered_traffic_data, aes(x = weather_main, y = traffic_volume, fill = weather_main)) +
   geom_violin(trim = FALSE, scale = "width", adjust = 1, alpha = 0.7) +
   geom_boxplot(width = 0.1, fill = "white", alpha = 0.7) +
   scale_fill_viridis_d(option = "viridis") +
@@ -383,6 +384,7 @@ ggplot(filtered_traffic_data, aes(x = weather_main, y = traffic_volume, fill = w
   ) +
   theme_minimal() +
   theme(
+    plot.title.position = "plot",
     plot.title = element_text(hjust = 0, size = 16, face = "bold"),
     plot.subtitle = element_text(hjust = 0, size = 12),
     plot.caption = element_text(hjust = 1, size = 10, face = "italic"),
@@ -396,6 +398,28 @@ ggplot(filtered_traffic_data, aes(x = weather_main, y = traffic_volume, fill = w
     panel.grid.major.x = element_line(color = "black", size = 0.5),
     panel.grid.minor.x = element_blank()
   )
+
+gg_violin
+
+```
+
+```{r}
+# Convert Voilin Plot to Interactive Violin Plot
+
+interactive_plot <- ggplotly(gg_violin)
+
+interactive_plot <- interactive_plot %>% 
+  layout(
+    title = "Interactive Distribution of Traffic Volume by Weather Condition",
+    xaxis = list(title = "Weather Condition"),
+    yaxis = list(title = "Traffic Volume")
+  )
+
+# Display the plot
+interactive_plot
+
+# Save the plot as an HTML file
+htmlwidgets::saveWidget(interactive_plot, "interactive_traffic_volume.html")
 
 ```
 
@@ -428,6 +452,48 @@ The violin plot representing the distribution of traffic volume by weather condi
     -   The plot includes a descriptive title and subtitle that clearly indicate the purpose of the visualization. A caption is provided to cite the data source, adding credibility and context to the plot.
 7.  **Accessibility:**
     -   The color palette used is color-blind friendly, ensuring that the visualization is accessible to a wider audience. This consideration is crucial for inclusive data presentation.
+
+### Revision Done
+
+#### Overview
+
+The focus of the revision is on enhancing a violin plot that illustrates traffic volume distributions by weather conditions, incorporating interactive features to improve user engagement and data comprehension.
+
+#### Steps to Enhance Interactivity with Plotly
+
+1.  **Preparation and Installation**:\
+    Begin by installing and loading necessary R packages (`plotly` and `ggplot2`). Use `install.packages("packageName")` to install and `library(packageName)` to load them.
+
+2.  **Create a Base ggplot Object**:\
+    Construct a ggplot object with `geom_violin` and `geom_boxplot` to visualize traffic volume distributions. Utilize `aes` for aesthetic mappings such as x, y, and fill.
+
+3.  **Customizing the ggplot**:\
+    Enhance aesthetics with `scale_fill_viridis_d` for a color-blind-friendly palette and `theme_minimal()` for a clean layout. Adjust text elements and graphical parameters to improve clarity and visual appeal.
+
+4.  **Converting ggplot to Plotly**:\
+    Convert the static ggplot object into an interactive plot using `ggplotly()`, which retains defined aesthetics and adds interactive capabilities.
+
+5.  **Enhancing Plotly Visualization**:\
+    Customize the interactive plot with Plotly\'s `layout` function to refine titles, axis labels, and tooltips. Enable features like hovering, zooming, and panning for a detailed exploration.
+
+6.  **Display and Save Options**:\
+    Display the interactive plot within environments like RStudio's Viewer pane or save as an HTML file using `htmlwidgets::saveWidget()` for easy sharing and embedding.
+
+#### Benefits of Interactive Visualizations
+
+-   **Enhanced User Engagement**: Interactivity allows users to delve into specifics like exact values and trends through tooltips and hover effects, promoting a deeper understanding of the data.
+
+-   **Increased Accessibility**: Interactive visualizations adapt to various devices and screen sizes. Integration with web technologies helps meet accessibility standards, making data more accessible to a broader audience, including those with disabilities.
+
+-   **Improved Presentation and Sharing**: Interactive charts can be embedded into web pages or shared as HTML files, facilitating dissemination across diverse platforms and enhancing the professional quality of presentations.
+
+-   **Dynamic Data Exploration**: Real-time data interaction and customizable views enable users to conduct more targeted and efficient data analyses.
+
+-   **Educational Tool**: Interactive tools support active data exploration, enhancing learning and teaching of complex statistical concepts.
+
+#### Conclusion
+
+Transforming ggplot2 plots into interactive visualizations with Plotly not only elevates the aesthetics but significantly enhances the functionality and accessibility of the plots. This method bridges the gap between static data presentation and interactive data exploration, making complex data more understandable and actionable for all users. This shift is essential as data presentation and analysis needs continue to evolve, emphasizing accessibility, user engagement, and comprehensive data exploration.
 
 ------------------------------------------------------------------------
 
