@@ -69,7 +69,7 @@ The dataset comprises hourly traffic volume records along with various weather c
    - Employed enhanced violin plots to depict how various weather conditions influence traffic volumes. These plots were made interactive using the `plotly` package, allowing for dynamic exploration of the data. The interactivity enriches the user's understanding by providing tooltips that display specific traffic volume data when hovered over different sections of the plot. This visualization method not only illustrates the variability and central tendencies of traffic under each weather condition but also enables a more engaging and detailed examination of how weather impacts road use.
    ![View the Interactive Traffic Volume Visualization](../figures/violin_plot_weather.png)
 
-   [View the Interactive Traffic Volume Visualization (Interactive)](../figures/interactive_traffic_volume.html)
+   [View the Traffic Volume Visualization (Interactive)](../figures/interactive_traffic_volume.html)
 
 
 ### Future Work
