@@ -138,7 +138,6 @@ enhanced_plot
 
 ```
 
-
 #### Spatial Visualization
 
 A more detailed spatial visualization was created to illustrate the geographical distribution of lakes in Florida. The lakes were categorized by their size, and a color scheme was applied to highlight these categories. Major cities were also marked on the map for reference.
@@ -179,6 +178,10 @@ enhanced_plot <- ggplot() +
 # Display the enhanced static plot
 enhanced_plot
 ```
+
+### Revised Spatial Visualization
+
+The following visualization is an improved version of the original spatial visualization for Florida lakes. Enhancements include adding the outline of the state of Florida and the boundaries of Florida counties.
 
 ```{r}
 # Load Florida state outline
@@ -227,8 +230,8 @@ enhanced_plot_revised <- ggplot() +
     panel.background = element_rect(fill = "ivory", color = NA),
     plot.background = element_rect(fill = "ivory", color = NA),
     plot.title.position = "plot",
-    plot.title = element_text(hjust = 0.5, size = 16, face = "bold", margin = margin(t = 10, b = 10)),
-    plot.subtitle = element_text(hjust = 0.5, size = 12, margin = margin(b = 10)),
+    plot.title = element_text(hjust = 0, size = 16, face = "bold", margin = margin(t = 10, b = 10)),
+    plot.subtitle = element_text(hjust = 0, size = 12, margin = margin(b = 10)),
     panel.grid.major = element_line(color = "grey80", linewidth = 0.5),
     legend.position = "right"
   )
@@ -309,10 +312,10 @@ interactive_plot <- ggplotly(enhanced_plot, tooltip = "text") %>%
     plot_bgcolor = "ivory",    # Set plot background color to ivory
     title = list(
       text = "Florida Lakes",  # Title text
-      x = 0,                            # Align to the left
-      xanchor = "left",                 # Anchor to the left
-      font = list(size = 16, face = "bold"),
-      pad = list(b = 10)                # Adjust bottom padding
+      x = 0,                   # Align to the left
+      xanchor = "left",        # Anchor to the left
+      font = list(size = 16, family = "bold"),
+      pad = list(t = 10, b = 10)  # Adjust top and bottom padding
     ),
     legend = list(
       x = 1,
@@ -330,18 +333,38 @@ saveWidget(interactive_plot, "../figures/florida_lakes_interactive_map.html", se
 
 ```
 
+### Revised Interactive Visualization
+
+The following visualization is an improved version of the original interactive visualization for Florida lakes. Enhancements include adding the outline of the state of Florida and the boundaries of Florida counties.
 
 ```{r}
 # Convert to interactive plot with Plotly
-interactive_plot_revised <- ggplotly(enhanced_plot_revised, tooltip = "text")  # Ensure tooltips are activated
+interactive_plot_revised <- ggplotly(enhanced_plot_revised, tooltip = "text") %>%
+  layout(
+    paper_bgcolor = "ivory",   # Set background color to ivory
+    plot_bgcolor = "ivory",    # Set plot background color to ivory
+    title = list(
+      text = "Florida Lakes",  # Title text
+      x = 0,                   # Align to the left
+      xanchor = "left",        # Anchor to the left
+      font = list(size = 16, family = "bold"),
+      pad = list(t = 10, b = 10)  # Adjust top and bottom padding
+    ),
+    legend = list(
+      x = 1,
+      y = 0.5,
+      xanchor = "right"
+    ),
+    margin = list(t = 50)  # Adjust the top margin to create space for the title
+  )
 
 # Print the interactive plot
 interactive_plot_revised
 
 # Save the interactive plot as an HTML file
 saveWidget(interactive_plot_revised, "../figures/florida_lakes_interactive_map_revised.html", selfcontained = TRUE)
-```
 
+```
 
 ### Findings and Discussion
 
@@ -422,6 +445,23 @@ Future approaches could include analyzing the impact of geographical features, s
 
 \- **Minimalist Theme:** The theme is kept minimal to avoid distractions, ensuring that the data is the primary focus.\
 
+### Revisions Done to the Spatial and Interactive Visualization of Florida Lakes
+
+The original spatial visualization of Florida lakes has been significantly enhanced by adding the outline of the state of Florida and the boundaries of Florida counties. Including the state outline helps viewers understand the geographic boundaries and the placement of lakes and cities within Florida, providing a clear frame of reference. Adding county boundaries adds another layer of geographic detail, allowing viewers to see how lakes are distributed across different counties. This helps in understanding regional differences and provides more granularity to the visualization.
+
+**Additional Improvements**:
+
+-   **Tooltips**: Added tooltips for lakes and counties, displaying the lake name, size category, and county name. Tooltips improve interactivity by providing additional information on hover, making the visualization more informative without cluttering the visual space and allowing viewers to explore details on demand.
+
+-   **Color and Fill Adjustments**: Set the fill color of the state outline to gray and the county boundaries to gray with no fill. Adjusted the color scheme using the `viridis` palette for city points and custom colors for lake size categories, providing a neutral backdrop that enhances visual clarity and makes different geographical areas easily distinguishable.
+
+**Theme and Background Enhancements**:
+
+-   **Theme Settings**: Set the panel and plot backgrounds to ivory and refined the theme settings for titles and subtitles. Using an ivory background provides a soft contrast that enhances readability without being harsh on the eyes.
+
+### Conversion to Interactive Plot with Plotly
+
+Then the spatial visualization was further enhanced by converting it to an interactive plot using Plotly. This conversion allows users to interact dynamically, explore detailed information via tooltips, and zoom in on specific areas of interest. The interactivity significantly improves the user experience, making the data more accessible and engaging, transforming the static spatial visualization into a more dynamic and informative tool.
 
 ---
 
@@ -606,14 +646,13 @@ The initial assumption was that the perimeter of a lake would be a good predicto
 
 \- **Minimalist Theme:** The theme is kept minimal to avoid distractions, ensuring that the data is the primary focus.
 
-
 ------------------------------------------------------------------------
 
 ### Conclusion
 
 This mini-project successfully explored and visualized the relationship between the perimeter and area of lakes in Florida. The process involved data cleaning, model fitting, residual analysis, and creating both static and interactive visualizations. Key principles of data visualization and design were applied to ensure clarity, simplicity, and effective communication of insights. Despite challenges such as handling missing data and ensuring appropriate log scale transformations, the final visualizations provided valuable insights and highlighted potential areas for further exploration.
 
-##  Motivation for Predicting Lake Area from Perimeter (Answer to Comments)
+## Motivation for Predicting Lake Area from Perimeter (Answer to Comments)
 
 1.  **Environmental Management and Conservation:** Predicting the area of lakes from their perimeters helps in planning and managing water resources more effectively. It assists in estimating water volume, which is crucial for managing water supply, understanding ecological dynamics, and conservation efforts. It can influence decisions on water usage restrictions, conservation priorities, and habitat restoration projects.
 
@@ -635,7 +674,7 @@ The accuracy of predictions from a linear model assuming a relationship between 
 
 ### Practical Applications of Shape-Assumed Modeling
 
--   **Validation with Geometric Data:** By comparing predicted areas with actual measurements from geospatial datasets, the model's assumptions about shape can be validated and adjusted. This iterative process can refine the model\'s predictive power.
+-   **Validation with Geometric Data:** By comparing predicted areas with actual measurements from geospatial datasets, the model's assumptions about shape can be validated and adjusted. This iterative process can refine the model's predictive power.
 
 -   **Use in Remote Sensing:** In regions where direct measurement of lake boundaries is challenging, assumptions about shapes can enable remote sensing tools to estimate lake areas from minimal data points, enhancing the accessibility of geographic and environmental data.
 
