@@ -16,9 +16,21 @@ The motivation behind this project is to understand the spatial distribution of 
 
 - **Geographical Distribution (Revised)**: The spatial visualizations show the distribution of lakes across Florida, categorized by their size. Major cities are marked to provide context and help understand the proximity of lakes to urban areas. After revision, the visualizations have been enhanced by adding the outline of Florida and the boundaries of its counties.
 
+  ![Florida Lakes Spatial Visualization First Iteration](../figures/spatial_viz.png)
+
+  ![Florida Lakes Spatial Visualization Second Iteration](../figures/spatial_viz_2.png)
+
+  ![Florida Lakes Spatial Visualization Third Iteration](../figures/spatial_viz_3.png)
+
+  ![Florida Lakes Spatial Visualization Fourth Iteration](../figures/spatial_viz_4.png)
+
 - **Interactive Visualization (Revised)**: An interactive map was created to enhance user engagement, providing additional information through hover text and zoom capabilities. This allows users to explore the data more dynamically and gain deeper insights.
 
 - **Linear Regression Analysis**: A linear regression model was fitted to predict the area of lakes based on their perimeter. The model confirmed a significant correlation between perimeter and area, with some notable outliers indicating unique characteristics or measurement anomalies.
+
+  ![Residuals Vs Predicted](../figures/residuals_vs_predicted.png)
+
+  ![Predicted Vs Actual](../figures/predicted_vs_actual.png)
 
 
 ### Data Description
