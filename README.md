@@ -31,7 +31,7 @@ Here are my favorite visualizations from this project, depicting the spatial vis
 
 ![Florida Lakes Spatial Visualization Fourth Iteration](figures/spatial_viz_4.png)
 
-[View the New Florida Lakes Visualization (Interactive)](figures/florida_lakes_interactice_map_revised.html)
+> [View the New Florida Lakes Visualization (Interactive)](figures/florida_lakes_interactice_map_revised.html)
 
 
 ### Project 03: Exploratory Data Analysis Through Visualization
