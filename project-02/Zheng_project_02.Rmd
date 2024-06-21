@@ -463,7 +463,7 @@ The original spatial visualization of Florida lakes has been significantly enhan
 
 Then the spatial visualization was further enhanced by converting it to an interactive plot using Plotly. This conversion allows users to interact dynamically, explore detailed information via tooltips, and zoom in on specific areas of interest. The interactivity significantly improves the user experience, making the data more accessible and engaging, transforming the static spatial visualization into a more dynamic and informative tool.
 
----
+------------------------------------------------------------------------
 
 ### Linear Regression Analysis
 
