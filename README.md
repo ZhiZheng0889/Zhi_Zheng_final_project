@@ -15,9 +15,9 @@ In the `project_01/` folder, you can find a detailed analysis of traffic data fr
 **Sample data visualization:** 
 
 This enhanced violin plot is my favorite visualization in this project, and it demonstrates the impact of different weather conditions on traffic volume. The interactive nature of the plot allows for dynamic exploration, providing detailed insights into how traffic varies under different weather scenarios.
-![Violin Plot of Traffic Volume by Weather](../figures/violin_plot_weather.png)
+![Violin Plot of Traffic Volume by Weather](figures/violin_plot_weather.png)
 
-> [View the Traffic Volume Visualization (Interactive)](../figures/interactive_traffic_volume.html)
+> [View the Traffic Volume Visualization (Interactive)](figures/interactive_traffic_volume.html)
 
 
 
@@ -29,9 +29,9 @@ In this project, I explored the spatial distribution of lakes in Florida and dev
 
 Here are my favorite visualizations from this project, depicting the spatial visualization and interactive visualization of Florida lakes. These maps show the lakes categorized by size and highlight their geographical distribution across the state, with county boundaries and major cities for context.
 
-![Florida Lakes Spatial Visualization Fourth Iteration](../figures/spatial_viz_4.png)
+![Florida Lakes Spatial Visualization Fourth Iteration](figures/spatial_viz_4.png)
 
-[View the New Florida Lakes Visualization (Interactive)](../figures/florida_lakes_interactice_map_revised.html)
+[View the New Florida Lakes Visualization (Interactive)](figures/florida_lakes_interactice_map_revised.html)
 
 
 ### Project 03: Exploratory Data Analysis Through Visualization
@@ -42,7 +42,7 @@ In this project, I explored a variety of visual techniques to analyze datasets f
 
 Here is my favorite visualization from this project, depicting a network visualization of commonly used terms in RateMyProfessors comments. This graph illuminates the connections between terms, providing a clear view of the most prominent themes and sentiments expressed by students.
 
-![Network Visualization of Commonly Used Terms](../figures/network_plot.png)
+![Network Visualization of Commonly Used Terms](figures/network_plot.png)
 
 
 ### Moving Forward
