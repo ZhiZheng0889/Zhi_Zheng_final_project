@@ -419,7 +419,7 @@ interactive_plot <- interactive_plot %>%
 interactive_plot
 
 # Save the plot as an HTML file
-htmlwidgets::saveWidget(interactive_plot, "interactive_traffic_volume.html")
+htmlwidgets::saveWidget(interactive_plot, "../figures/interactive_traffic_volume.html")
 
 ```
 

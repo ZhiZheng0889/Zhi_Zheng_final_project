@@ -37,6 +37,8 @@ library(plotly)
 library(htmlwidgets)
 library(broom)
 library(ggrepel)
+library(rnaturalearth)
+library(tigris)
 ```
 
 #### Loading and Summarizing Data
@@ -136,6 +138,7 @@ enhanced_plot
 
 ```
 
+
 #### Spatial Visualization
 
 A more detailed spatial visualization was created to illustrate the geographical distribution of lakes in Florida. The lakes were categorized by their size, and a color scheme was applied to highlight these categories. Major cities were also marked on the map for reference.
@@ -174,7 +177,65 @@ enhanced_plot <- ggplot() +
   )
 
 # Display the enhanced static plot
-print(enhanced_plot)
+enhanced_plot
+```
+
+```{r}
+# Load Florida state outline
+florida_state <- ne_states(country = "United States of America", returnclass = "sf") %>%
+  filter(name == "Florida")
+
+# Load county boundaries for Florida
+florida_counties <- counties(state = "FL", class = "sf")
+
+# Check CRS for both and transform if necessary
+florida_state <- st_transform(florida_state, crs = st_crs(florida_counties))
+florida_counties <- st_transform(florida_counties, crs = st_crs(florida_state))
+
+# Clip the counties to the state outline
+florida_counties_clipped <- st_intersection(florida_counties, florida_state)
+
+# Define cities with coordinates and shapes
+cities <- data.frame(
+  name = c("Tallahassee", "Jacksonville", "Orlando", "Tampa", "Miami"),
+  lon = c(-84.2807, -81.6557, -81.3792, -82.4572, -80.1918),
+  lat = c(30.4383, 30.3322, 28.5383, 27.9506, 25.7617),
+  shape = c(16, 17, 18, 19, 15)
+)
+
+# Add tooltip columns directly within your data
+florida_lakes$tooltip <- paste("Lake Name:", florida_lakes$NAME, "<br>Size Category:", florida_lakes$size_category)
+florida_counties_clipped$tooltip <- paste("County Name:", florida_counties_clipped$NAME)
+
+# Create the enhanced plot
+enhanced_plot_revised <- ggplot() +
+  geom_sf(data = florida_state, fill = "gray90", color = "black", size = 0.5) +
+  geom_sf(data = florida_counties_clipped, fill = NA, color = "gray70", size = 0.25) +
+  geom_sf(data = florida_lakes, aes(fill = size_category, text = tooltip), color = NA, alpha = 0.7) +
+  geom_point(data = cities, aes(x = lon, y = lat, shape = name), color = viridis(1, option = "A", begin = 0.8), size = 3) +
+  scale_shape_manual(values = cities$shape) +
+  scale_fill_manual(values = c("Large" = "purple", "Medium" = "red", "Small" = "darkred"), name = "Size Category") +
+  labs(
+    title = "Florida Lakes",
+    subtitle = "Geographical Distribution of Lakes in Florida",
+    x = "",
+    y = "",
+    shape = "City"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "ivory", color = NA),
+    plot.background = element_rect(fill = "ivory", color = NA),
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold", margin = margin(t = 10, b = 10)),
+    plot.subtitle = element_text(hjust = 0.5, size = 12, margin = margin(b = 10)),
+    panel.grid.major = element_line(color = "grey80", linewidth = 0.5),
+    legend.position = "right"
+  )
+
+# Display the plot
+enhanced_plot_revised
+
 ```
 
 ### Findings and Discussion
@@ -265,9 +326,22 @@ interactive_plot <- ggplotly(enhanced_plot, tooltip = "text") %>%
 interactive_plot
 
 # Save the interactive plot as an HTML file
-saveWidget(interactive_plot, "florida_lakes_interactive_map.html", selfcontained = TRUE)
+saveWidget(interactive_plot, "../figures/florida_lakes_interactive_map.html", selfcontained = TRUE)
 
 ```
+
+
+```{r}
+# Convert to interactive plot with Plotly
+interactive_plot_revised <- ggplotly(enhanced_plot_revised, tooltip = "text")  # Ensure tooltips are activated
+
+# Print the interactive plot
+interactive_plot_revised
+
+# Save the interactive plot as an HTML file
+saveWidget(interactive_plot_revised, "../figures/florida_lakes_interactive_map_revised.html", selfcontained = TRUE)
+```
+
 
 ### Findings and Discussion
 
@@ -346,9 +420,10 @@ Future approaches could include analyzing the impact of geographical features, s
 
 \- **Viridis Color Palette:** Ensures good differentiation and is colorblind-friendly, enhancing accessibility.
 
-\- **Minimalist Theme:** The theme is kept minimal to avoid distractions, ensuring that the data is the primary focus.
+\- **Minimalist Theme:** The theme is kept minimal to avoid distractions, ensuring that the data is the primary focus.\
 
-------------------------------------------------------------------------
+
+---
 
 ### Linear Regression Analysis
 
@@ -531,8 +606,37 @@ The initial assumption was that the perimeter of a lake would be a good predicto
 
 \- **Minimalist Theme:** The theme is kept minimal to avoid distractions, ensuring that the data is the primary focus.
 
+
 ------------------------------------------------------------------------
 
 ### Conclusion
 
 This mini-project successfully explored and visualized the relationship between the perimeter and area of lakes in Florida. The process involved data cleaning, model fitting, residual analysis, and creating both static and interactive visualizations. Key principles of data visualization and design were applied to ensure clarity, simplicity, and effective communication of insights. Despite challenges such as handling missing data and ensuring appropriate log scale transformations, the final visualizations provided valuable insights and highlighted potential areas for further exploration.
+
+##  Motivation for Predicting Lake Area from Perimeter (Answer to Comments)
+
+1.  **Environmental Management and Conservation:** Predicting the area of lakes from their perimeters helps in planning and managing water resources more effectively. It assists in estimating water volume, which is crucial for managing water supply, understanding ecological dynamics, and conservation efforts. It can influence decisions on water usage restrictions, conservation priorities, and habitat restoration projects.
+
+2.  **Urban and Regional Planning:** As urban areas expand, understanding the geographical and quantitative aspects of nearby natural resources like lakes becomes essential. Predictions about lake sizes can aid in flood risk assessment, land use planning, and recreational area development, ensuring sustainable development while minimizing environmental impact.
+
+3.  **Climate Change Studies:** Lakes play a significant role in local microclimates and biodiversity. By predicting changes in lake sizes over time (assuming historical perimeter data is available), researchers can assess the impacts of climate change on aquatic ecosystems. This can be crucial for studies on evaporation rates, water temperature changes, and subsequent effects on aquatic life.
+
+4.  **Hydrological Modeling:** Accurate predictions of lake area can enhance hydrological models that predict water flow and storage. This modeling is vital for flood prediction, water quality management, and sediment transport studies.
+
+### Confirming Predictions Under Assumptions About Lake Shape
+
+The accuracy of predictions from a linear model assuming a relationship between perimeter and area largely depends on the geometric characteristics of the lakes:
+
+-   **Assumption of Regular Shapes:** If lakes are assumed to be approximately circular (the most area-efficient shape for a given perimeter), the relationship between perimeter PPP and area AAA can be tightly approximated by the formula A=P24πA = \frac{P^2}{4\pi}A=4πP2​. This assumption can simplify modeling but might not hold true for irregularly shaped lakes.
+
+-   **Handling Irregular Shapes:** Lakes are often irregular, with indented shorelines that increase the perimeter relative to the area. This can lead to underestimations of area if the model is based solely on circular assumptions. In such cases, using more complex geometric or fractal dimensions could improve model accuracy.
+
+-   **Geospatial Techniques:** Advanced modeling techniques that incorporate satellite imagery and geospatial analysis can provide more accurate shape descriptors, allowing for better predictions. Techniques like convex hulls or minimum bounding rectangles can give a better sense of the "average" dimensions of irregular shapes.
+
+### Practical Applications of Shape-Assumed Modeling
+
+-   **Validation with Geometric Data:** By comparing predicted areas with actual measurements from geospatial datasets, the model's assumptions about shape can be validated and adjusted. This iterative process can refine the model\'s predictive power.
+
+-   **Use in Remote Sensing:** In regions where direct measurement of lake boundaries is challenging, assumptions about shapes can enable remote sensing tools to estimate lake areas from minimal data points, enhancing the accessibility of geographic and environmental data.
+
+In conclusion, while predicting lake area from perimeter provides valuable insights for various applications, the assumptions about lake shape need careful consideration. Integrating geometric corrections and advanced spatial analyses can substantially enhance the model's utility and accuracy, making it a more robust tool for environmental and planning purposes.
