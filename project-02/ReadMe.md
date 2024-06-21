@@ -25,6 +25,8 @@ The motivation behind this project is to understand the spatial distribution of 
   ![Florida Lakes Spatial Visualization Fourth Iteration](../figures/spatial_viz_4.png)
 
 - **Interactive Visualization (Revised)**: An interactive map was created to enhance user engagement, providing additional information through hover text and zoom capabilities. This allows users to explore the data more dynamically and gain deeper insights.
+  -[View the Old Florida Lakes Visualization (Interactive)](../figures/florida_lakes_interactice_map.html)
+  -[View the New Florida Lakes Visualization (Interactive)](../figures/florida_lakes_interactice_map_revised.html)
 
 - **Linear Regression Analysis**: A linear regression model was fitted to predict the area of lakes based on their perimeter. The model confirmed a significant correlation between perimeter and area, with some notable outliers indicating unique characteristics or measurement anomalies.
 
