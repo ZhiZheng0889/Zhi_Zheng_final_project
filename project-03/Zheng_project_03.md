@@ -151,16 +151,16 @@ sample_n(weather_tpa, 100)
 ## # A tibble: 100 × 8
 ##     year month   day precipitation max_temp min_temp ave_temp date      
 ##    <dbl> <dbl> <dbl>         <dbl>    <dbl>    <dbl>    <dbl> <date>    
-##  1  2022     7     9          0          92       81     86.5 2022-07-09
-##  2  2022     1     8          0          81       58     69.5 2022-01-08
-##  3  2022     1    26          0.08       63       54     58.5 2022-01-26
-##  4  2022     7    31          0          97       81     89   2022-07-31
-##  5  2022     3    20          0          84       65     74.5 2022-03-20
-##  6  2022     5    24          0.01       94       79     86.5 2022-05-24
-##  7  2022     7    20          0          93       83     88   2022-07-20
-##  8  2022     3    27          0          81       63     72   2022-03-27
-##  9  2022     4    26          0          87       72     79.5 2022-04-26
-## 10  2022     4    10          0          77       56     66.5 2022-04-10
+##  1  2022     8    23       0             92       80     86   2022-08-23
+##  2  2022     3    22       0             88       66     77   2022-03-22
+##  3  2022     1    31       0             69       39     54   2022-01-31
+##  4  2022    12    10       0             80       62     71   2022-12-10
+##  5  2022     9    22       0             94       77     85.5 2022-09-22
+##  6  2022    12    23       0.00001       70       42     56   2022-12-23
+##  7  2022     3    15       1.04          84       67     75.5 2022-03-15
+##  8  2022     4    20       0             85       61     73   2022-04-20
+##  9  2022     3    28       0             83       67     75   2022-03-28
+## 10  2022     4    11       0             85       62     73.5 2022-04-11
 ## # ℹ 90 more rows
 ```
 
@@ -1082,45 +1082,4 @@ This visualization represents the top terms for two identified topics from the R
 This plot effectively highlights the distinct themes students focus on when evaluating their professors, providing valuable insights into what aspects of the teaching and learning experience are most impactful. The separation into two clear topics allows educators to understand specific areas of strength and areas needing improvement, helping to enhance overall educational quality.
 
 ---
-
-
-```r
-# Define the directory path for saving plots
-plot_path <- "../figures/"
-
-# Check if the directory exists, if not, create it
-if (!dir.exists(plot_path)) {
-  dir.create(plot_path, recursive = TRUE)
-}
-
-# Save histogram plot
-ggsave(filename = paste0(plot_path, "histogram_plot.png"), plot = hist_plot, width = 10, height = 8)
-
-# Save density plot
-ggsave(filename = paste0(plot_path, "density_plot.png"), plot = density_plot, width = 10, height = 8)
-
-# Save density facet plot
-ggsave(filename = paste0(plot_path, "density_facet_plot.png"), plot = density_facet_plot, width = 10, height = 8)
-
-# Save ridges plot
-ggsave(filename = paste0(plot_path, "ridges_plot.png"), plot = ridges_plot, width = 10, height = 8)
-
-# Save precipitation plot
-ggsave(filename = paste0(plot_path, "precipitation_plot.png"), plot = precipitation_point_plot, width = 10, height = 8)
-
-# Save word cloud
-png(file = paste0(plot_path, "word_cloud.png"), width = 800, height = 600)
-par(mar = c(0,0,0,0))
-wordcloud(words = word_freq$word, freq = word_freq$n, max.words = 150, random.order = FALSE, rot.per = 0.35, scale = c(3, 0.5), colors = viridis::viridis(8))
-dev.off()
-
-# Save network plot
-ggsave(filename = paste0(plot_path, "network_plot.png"), plot = network_plot, width = 10, height = 8)
-
-# Save sentiment analysis plot
-ggsave(filename = paste0(plot_path, "sentiment_analysis_plot.png"), plot = sentiment_analysis_plot, width = 10, height = 8)
-
-# Save topic modeling plot
-ggsave(filename = paste0(plot_path, "topic_modeling_plot.png"), plot = topic_modeling_plot, width = 10, height = 8)
-```
 
