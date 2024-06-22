@@ -59,6 +59,9 @@ weather_tpa <- weather_tpa %>%
 str(weather_tpa)
 summary(weather_tpa)
 
+# Inspect the data
+head(weather_tpa, 100)
+
 # Random sample to inspect the data
 sample_n(weather_tpa, 100)
 
@@ -71,12 +74,31 @@ weather_tpa$month <- factor(weather_tpa$month, levels = 1:12, labels = month_nam
 ```
 
 ```{r}
+# Create a count for each day of the temperature
+weather_tpa %>% 
+  ggplot(mapping = aes(x = max_temp, fill = factor(month))) +
+  geom_histogram(color = "white", binwidth = 3) + 
+  facet_wrap(~factor(month), ncol = 4) +
+  labs(
+    x = "Maximum temperatures",
+    y = "Number of Days"
+  ) +
+  scale_fill_viridis_d(name = "Temp. [F]", option = "D")+
+  theme(
+    legend.position = "none",
+    axis.title.y = element_text(size = 15),
+    axis.title.x = element_text(size = 15)
+  )
+```
+
+
+```{r}
 # Create a histogram of maximum temperature distribution by month with a color-blind friendly palette
 hist_plot <- weather_tpa %>%
   ggplot(aes(x = max_temp, fill = ..count..)) + # Fill based on the count
   geom_histogram(binwidth = 3, color = "black", na.rm = TRUE) +
   scale_fill_viridis_c(option = "D", name = "Count") + # Ensuring continuous scale for count
-  facet_wrap(~ month, scales = "fixed", ncol = 3) +
+  facet_wrap(~ month, scales = "fixed", ncol = 4) +
   theme_minimal(base_size = 15) +
   theme(
     strip.background = element_rect(fill = "lightgray", color = NA),
@@ -145,6 +167,12 @@ upper_iqr <- quantile(weather_tpa$max_temp, 0.75, na.rm = TRUE)
 ```
 
 ```{r}
+ggplot(data = weather_tpa, mapping = aes(max_temp)) + 
+  geom_density(kernel = "epanechnikov", bw = 0.5, fill = "gray50") 
+```
+
+
+```{r}
 # Enhanced density plot for max_temp with color-blind friendly palette and statistics
 density_plot <- weather_tpa %>%
   ggplot(aes(x = max_temp)) +
@@ -197,23 +225,9 @@ knitr::include_graphics("https://github.com/reisanar/figs/raw/master/tpa_max_tem
 ```
 
 ```{r}
-# Function to remove outliers based on the IQR method
-remove_outliers <- function(data, column) {
-  Q1 <- quantile(data[[column]], 0.25)
-  Q3 <- quantile(data[[column]], 0.75)
-  IQR <- Q3 - Q1
-  lower_bound <- Q1 - 1.5 * IQR
-  upper_bound <- Q3 + 1.5 * IQR
-  data %>% filter(data[[column]] >= lower_bound & data[[column]] <= upper_bound)
-}
-
-# Remove outliers from the max_temp column
-weather_tpa <- remove_outliers(weather_tpa, "max_temp")
-```
-
-```{r}
 # Create the density plot with faceting
 density_facet_plot <- weather_tpa %>%
+  filter(is.finite(max_temp)) %>%
   ggplot(aes(x = max_temp, fill = month)) + # Use month for fill
   geom_density(alpha = 0.7, color = "black") +
   facet_wrap(~ month, scales = "free_y", ncol = 4) +
@@ -243,8 +257,7 @@ density_facet_plot <- weather_tpa %>%
     x = "Maximum Temperatures (°F)",
     y = "Density"
   ) +
-  scale_x_continuous(limits = c(50, 100)) +
-  scale_y_continuous(limits = c(0, .2))
+  scale_y_continuous(limits = c(0, .4))
 
 # Print the plot
 density_facet_plot
@@ -307,8 +320,7 @@ ridges_plot <- weather_tpa %>%
     title = "Maximum Temperatures for Each Month in 2022",
     x = "Maximum Temperature (°F)",
     y = "Month"
-  ) +
-  scale_x_continuous(limits = c(50, 100))
+  ) 
 
 # Print the plot
 ridges_plot

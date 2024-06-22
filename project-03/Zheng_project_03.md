@@ -121,6 +121,28 @@ summary(weather_tpa)
 ```
 
 ```r
+# Inspect the data
+head(weather_tpa, 100)
+```
+
+```
+## # A tibble: 100 × 8
+##     year month   day precipitation max_temp min_temp ave_temp date      
+##    <dbl> <dbl> <dbl>         <dbl>    <dbl>    <dbl>    <dbl> <date>    
+##  1  2022     1     1       0             82       67     74.5 2022-01-01
+##  2  2022     1     2       0             82       71     76.5 2022-01-02
+##  3  2022     1     3       0.02          75       55     65   2022-01-03
+##  4  2022     1     4       0             76       50     63   2022-01-04
+##  5  2022     1     5       0             75       59     67   2022-01-05
+##  6  2022     1     6       0.00001       74       56     65   2022-01-06
+##  7  2022     1     7       0.00001       81       63     72   2022-01-07
+##  8  2022     1     8       0             81       58     69.5 2022-01-08
+##  9  2022     1     9       0             84       65     74.5 2022-01-09
+## 10  2022     1    10       0             81       64     72.5 2022-01-10
+## # ℹ 90 more rows
+```
+
+```r
 # Random sample to inspect the data
 sample_n(weather_tpa, 100)
 ```
@@ -129,16 +151,16 @@ sample_n(weather_tpa, 100)
 ## # A tibble: 100 × 8
 ##     year month   day precipitation max_temp min_temp ave_temp date      
 ##    <dbl> <dbl> <dbl>         <dbl>    <dbl>    <dbl>    <dbl> <date>    
-##  1  2022     2    11       0             78       52     65   2022-02-11
-##  2  2022    12     7       0             84       67     75.5 2022-12-07
-##  3  2022     7    13       0             94       80     87   2022-07-13
-##  4  2022     1    30       0             58       36     47   2022-01-30
-##  5  2022     1     9       0             84       65     74.5 2022-01-09
-##  6  2022     3    23       0             87       73     80   2022-03-23
-##  7  2022     7    10       0.87          93       78     85.5 2022-07-10
-##  8  2022     1    23       0.00001       57       46     51.5 2022-01-23
-##  9  2022     1    29       0             55       41     48   2022-01-29
-## 10  2022     3     2       0             78       58     68   2022-03-02
+##  1  2022     7     9          0          92       81     86.5 2022-07-09
+##  2  2022     1     8          0          81       58     69.5 2022-01-08
+##  3  2022     1    26          0.08       63       54     58.5 2022-01-26
+##  4  2022     7    31          0          97       81     89   2022-07-31
+##  5  2022     3    20          0          84       65     74.5 2022-03-20
+##  6  2022     5    24          0.01       94       79     86.5 2022-05-24
+##  7  2022     7    20          0          93       83     88   2022-07-20
+##  8  2022     3    27          0          81       63     72   2022-03-27
+##  9  2022     4    26          0          87       72     79.5 2022-04-26
+## 10  2022     4    10          0          77       56     66.5 2022-04-10
 ## # ℹ 90 more rows
 ```
 
@@ -153,12 +175,34 @@ weather_tpa$month <- factor(weather_tpa$month, levels = 1:12, labels = month_nam
 
 
 ```r
+# Create a count for each day of the temperature
+weather_tpa %>% 
+  ggplot(mapping = aes(x = max_temp, fill = factor(month))) +
+  geom_histogram(color = "white", binwidth = 3) + 
+  facet_wrap(~factor(month), ncol = 4) +
+  labs(
+    x = "Maximum temperatures",
+    y = "Number of Days"
+  ) +
+  scale_fill_viridis_d(name = "Temp. [F]", option = "D")+
+  theme(
+    legend.position = "none",
+    axis.title.y = element_text(size = 15),
+    axis.title.x = element_text(size = 15)
+  )
+```
+
+![](Zheng_project_03_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+
+
+```r
 # Create a histogram of maximum temperature distribution by month with a color-blind friendly palette
 hist_plot <- weather_tpa %>%
   ggplot(aes(x = max_temp, fill = ..count..)) + # Fill based on the count
   geom_histogram(binwidth = 3, color = "black", na.rm = TRUE) +
   scale_fill_viridis_c(option = "D", name = "Count") + # Ensuring continuous scale for count
-  facet_wrap(~ month, scales = "fixed", ncol = 3) +
+  facet_wrap(~ month, scales = "fixed", ncol = 4) +
   theme_minimal(base_size = 15) +
   theme(
     strip.background = element_rect(fill = "lightgray", color = NA),
@@ -197,7 +241,7 @@ print(hist_plot)
 ## generated.
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+![](Zheng_project_03_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
 Hint: the option `binwidth = 3` was used with the `geom_histogram()` function.
 
@@ -230,6 +274,15 @@ iqr_temp <- IQR(weather_tpa$max_temp, na.rm = TRUE)
 lower_iqr <- quantile(weather_tpa$max_temp, 0.25, na.rm = TRUE)
 upper_iqr <- quantile(weather_tpa$max_temp, 0.75, na.rm = TRUE)
 ```
+
+
+```r
+ggplot(data = weather_tpa, mapping = aes(max_temp)) + 
+  geom_density(kernel = "epanechnikov", bw = 0.5, fill = "gray50") 
+```
+
+![](Zheng_project_03_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+
 
 
 ```r
@@ -279,7 +332,7 @@ density_plot <- weather_tpa %>%
 density_plot
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+![](Zheng_project_03_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
 Hint: check the `kernel` parameter of the `geom_density()` function, and use `bw = 0.5`.
 
@@ -295,24 +348,9 @@ The density plot of maximum temperatures provides insights into the distribution
 
 
 ```r
-# Function to remove outliers based on the IQR method
-remove_outliers <- function(data, column) {
-  Q1 <- quantile(data[[column]], 0.25)
-  Q3 <- quantile(data[[column]], 0.75)
-  IQR <- Q3 - Q1
-  lower_bound <- Q1 - 1.5 * IQR
-  upper_bound <- Q3 + 1.5 * IQR
-  data %>% filter(data[[column]] >= lower_bound & data[[column]] <= upper_bound)
-}
-
-# Remove outliers from the max_temp column
-weather_tpa <- remove_outliers(weather_tpa, "max_temp")
-```
-
-
-```r
 # Create the density plot with faceting
 density_facet_plot <- weather_tpa %>%
+  filter(is.finite(max_temp)) %>%
   ggplot(aes(x = max_temp, fill = month)) + # Use month for fill
   geom_density(alpha = 0.7, color = "black") +
   facet_wrap(~ month, scales = "free_y", ncol = 4) +
@@ -342,14 +380,13 @@ density_facet_plot <- weather_tpa %>%
     x = "Maximum Temperatures (°F)",
     y = "Density"
   ) +
-  scale_x_continuous(limits = c(50, 100)) +
-  scale_y_continuous(limits = c(0, .2))
+  scale_y_continuous(limits = c(0, .4))
 
 # Print the plot
 density_facet_plot
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](Zheng_project_03_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 Hint: default options for `geom_density()` were used.
 
@@ -406,18 +443,17 @@ ridges_plot <- weather_tpa %>%
     title = "Maximum Temperatures for Each Month in 2022",
     x = "Maximum Temperature (°F)",
     y = "Month"
-  ) +
-  scale_x_continuous(limits = c(50, 100))
+  ) 
 
 # Print the plot
 ridges_plot
 ```
 
 ```
-## Picking joint bandwidth of 1.71
+## Picking joint bandwidth of 1.93
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+![](Zheng_project_03_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
 
 Hint: use the`{ggridges}` package, and the `geom_density_ridges()` function paying close attention to the `quantile_lines` and `quantiles` parameters. The plot above uses the `plasma` option (color scale) for the *viridis* palette.
 
@@ -483,7 +519,7 @@ precipitation_point_plot <- weather_tpa %>%
 print(precipitation_point_plot)
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
+![](Zheng_project_03_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
 
 ### Analysis of Daily Precipitation in 2022
 
@@ -651,7 +687,7 @@ wordcloud(
 )
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+![](Zheng_project_03_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
 
 *Explanation*: A word cloud is created using the `wordcloud` package. The `viridis` color palette is used for better visual appeal, and words are scaled and rotated for better readability.
 
@@ -798,7 +834,7 @@ network_plot <- ggraph(layout) +
 network_plot
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+![](Zheng_project_03_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
 
 *Explanation*: The network plot is created to visualize the connections between commonly used bigrams. The nodes represent words, and the edges represent the frequency of the bigrams. The plot is customized with a minimal theme and an ivory background.
 
@@ -888,7 +924,7 @@ sentiment_analysis_plot <- sentiments %>%
 sentiment_analysis_plot
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
+![](Zheng_project_03_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
 
 ### Analysis of Sentiment Analysis of RateMyProfessors Comments
 
@@ -1031,7 +1067,7 @@ topic_modeling_plot <- top_terms %>%
 topic_modeling_plot
 ```
 
-![](Zheng_project_03_files/figure-html/unnamed-chunk-26-1.png)<!-- -->
+![](Zheng_project_03_files/figure-html/unnamed-chunk-27-1.png)<!-- -->
 
 *Explanation*: This chunk visualizes the top terms for each topic. The terms are reordered within each topic for better readability, and the plot is customized with a minimal theme and an ivory background.
 
