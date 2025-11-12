@@ -10,7 +10,7 @@ This repository showcases projects from the _"Data Visualization and Reproducibl
 
 ### Project 01: Interstate 94 Traffic Analysis
 
-Located in the `project_01/` folder, this analysis examines how weather conditions and time of day influence traffic volume on Interstate 94 Westbound in Minnesota. The project employs various visualization techniques to reveal and understand traffic patterns, crucial for proposing solutions to enhance traffic management and safety.
+Located in the `project-01/` folder, this analysis examines how weather conditions and time of day influence traffic volume on Interstate 94 Westbound in Minnesota. The project employs various visualization techniques to reveal and understand traffic patterns, crucial for proposing solutions to enhance traffic management and safety.
 
 **Featured Visualization:**
 - **Violin Plot of Traffic Volume by Weather:** This plot illustrates the impact of weather conditions on traffic volumes, enabling dynamic exploration through its interactive features.
@@ -21,14 +21,14 @@ Located in the `project_01/` folder, this analysis examines how weather conditio
 
 ### Project 02: Florida Lakes Geographical Analysis
 
-This analysis, stored in the `project_02/` folder, focuses on the spatial distribution of Florida lakes. Using linear regression, I predicted lake areas from their perimeters, providing insights into lake size variations and their proximity to urban areas. This project includes comprehensive data preparation, regression analysis, and both static and interactive visualizations.
+This analysis, stored in the `project-02/` folder, focuses on the spatial distribution of Florida lakes. Using linear regression, I predicted lake areas from their perimeters, providing insights into lake size variations and their proximity to urban areas. This project includes comprehensive data preparation, regression analysis, and both static and interactive visualizations.
 
 **Featured Visualization:**
 - **Florida Lakes Spatial Visualization:** Maps categorizing lakes by size and showcasing their distribution with detailed geographical context.
   
   ![Florida Lakes Spatial Visualization Fourth Iteration](figures/spatial_viz_4.png)
   
-  > [Interactive Florida Lakes Map](figures/florida_lakes_interactice_map_revised.html)
+  > [Interactive Florida Lakes Map](figures/florida_lakes_interactive_map_revised.html)
 
 ### Project 03: Weather and Academic Feedback Visualization
 
@@ -44,3 +44,18 @@ This project involves analyzing weather data from Tampa International Airport an
 The course has significantly enhanced my ability to utilize visual design in data storytelling effectively. I have learned the power of theme customization, including color schemes and text positioning, to make visualizations more engaging and informative, whether presented live or through digital platforms.
 
 I am eager to further refine my skills in creating interactive visuals that adapt to real-time data and user interactions. My goal is to blend aesthetic sensibility with technical proficiency to produce visuals that are not only appealing but also drive informed decisions across various scenarios.
+
+## Getting Started
+
+- Install R (and optionally RStudio).
+- Install required packages: `Rscript scripts/install_packages.R`
+- Render all projects: `Rscript scripts/render_all.R`
+
+## Repository Structure
+
+- `project-01/` — Interstate 94 traffic analysis (RMarkdown + outputs)
+- `project-02/` — Florida lakes spatial + regression analysis
+- `project-03/` — Weather + text analytics visualizations
+- `data/` — Input datasets (CSV, shapefiles)
+- `figures/` — Centralized static/interactive figures
+- `scripts/` — Reproducibility helpers (`install_packages.R`, `render_all.R`)
